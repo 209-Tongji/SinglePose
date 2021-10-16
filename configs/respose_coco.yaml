@@ -1,0 +1,18 @@
+
+MODEL:
+  PRETRAINED: ''
+
+DATA_PRESET:
+  TYPE: 'simple'
+  SIGMA: 2
+  NUM_JOINTS: 17
+  IMAGE_SIZE:
+  - 256
+  - 192
+  HEATMAP_SIZE:
+  - 64
+  - 48
+
+TRAIN:
+  BEGIN_EPOCH: 0
+  END_EPOCH: 100
