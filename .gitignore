@@ -1,9 +1,10 @@
 nohup.out
 
-/model/
-/log/
+/models/
+/logs/
 
 *.pth
+*.log
 *.png
 *.jpg
 *.jpeg
