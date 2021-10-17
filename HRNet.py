@@ -1,7 +1,74 @@
 import torch
 from torch import nn
-from ResNet import BasicBlock, Bottleneck
 
+class Bottleneck(nn.Module):
+    expansion = 4
+
+    def __init__(self, inplanes, planes, stride=1, downsample=None, bn_momentum=0.1):
+        super(Bottleneck, self).__init__()
+        self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=1, bias=False)
+        self.bn1 = nn.BatchNorm2d(planes, momentum=bn_momentum)
+        self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=stride, padding=1, bias=False)
+        self.bn2 = nn.BatchNorm2d(planes, momentum=bn_momentum)
+        self.conv3 = nn.Conv2d(planes, planes * self.expansion, kernel_size=1, bias=False)
+        self.bn3 = nn.BatchNorm2d(planes * self.expansion, momentum=bn_momentum)
+        self.relu = nn.ReLU(inplace=True)
+        self.downsample = downsample
+        self.stride = stride
+
+    def forward(self, x):
+        residual = x
+
+        out = self.conv1(x)
+        out = self.bn1(out)
+        out = self.relu(out)
+
+        out = self.conv2(out)
+        out = self.bn2(out)
+        out = self.relu(out)
+
+        out = self.conv3(out)
+        out = self.bn3(out)
+
+        if self.downsample is not None:
+            residual = self.downsample(x)
+
+        out += residual
+        out = self.relu(out)
+
+        return out
+
+
+class BasicBlock(nn.Module):
+    expansion = 1
+
+    def __init__(self, inplanes, planes, stride=1, downsample=None, bn_momentum=0.1):
+        super(BasicBlock, self).__init__()
+        self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=3, stride=stride, padding=1, bias=False)
+        self.bn1 = nn.BatchNorm2d(planes, momentum=bn_momentum)
+        self.relu = nn.ReLU(inplace=True)
+        self.conv2 = nn.Conv2d(inplanes, planes, kernel_size=3, stride=1, padding=1, bias=False)
+        self.bn2 = nn.BatchNorm2d(planes, momentum=bn_momentum)
+        self.downsample = downsample
+        self.stride = stride
+
+    def forward(self, x):
+        residual = x
+
+        out = self.conv1(x)
+        out = self.bn1(out)
+        out = self.relu(out)
+
+        out = self.conv2(out)
+        out = self.bn2(out)
+
+        if self.downsample is not None:
+            residual = self.downsample(x)
+
+        out += residual
+        out = self.relu(out)
+
+        return out
 
 class StageModule(nn.Module):
     def __init__(self, stage, output_branches, c, bn_momentum):
@@ -155,34 +222,34 @@ class HRNet(nn.Module):
         self.final_layer = nn.Conv2d(c, nof_joints, kernel_size=(1, 1), stride=(1, 1))
 
     def forward(self, x):
-        x = self.conv1(x)
+        x = self.conv1(x) #x.shape = (128, 96)
         x = self.bn1(x)
         x = self.relu(x)
-        x = self.conv2(x)
+        x = self.conv2(x) #x.shape = (64, 48)
         x = self.bn2(x)
         x = self.relu(x)
 
         x = self.layer1(x)
-        x = [trans(x) for trans in self.transition1]  # Since now, x is a list (# == nof branches)
+        x = [trans(x) for trans in self.transition1]  # Since now, x is a list (# == nof branches) x.shape = [(64, 48) (32, 24)]
 
-        x = self.stage2(x)
+        x = self.stage2(x) #x.shape = [(64, 48), (32, 24)]
         # x = [trans(x[-1]) for trans in self.transition2]    # New branch derives from the "upper" branch only
         x = [
-            self.transition2[0](x[0]),
-            self.transition2[1](x[1]),
-            self.transition2[2](x[-1])
+            self.transition2[0](x[0]),  # shape = (64, 48)
+            self.transition2[1](x[1]),  # shape = (32, 24)
+            self.transition2[2](x[-1])  # shape = (16, 12)
         ]  # New branch derives from the "upper" branch only
 
-        x = self.stage3(x)
+        x = self.stage3(x)  # x.shape = [(64, 48), (32, 24), (16, 12)]
         # x = [trans(x) for trans in self.transition3]    # New branch derives from the "upper" branch only
         x = [
-            self.transition3[0](x[0]),
-            self.transition3[1](x[1]),
-            self.transition3[2](x[2]),
-            self.transition3[3](x[-1])
+            self.transition3[0](x[0]),  # shape = (64, 48)
+            self.transition3[1](x[1]),  # shape = (32, 24)
+            self.transition3[2](x[2]),  # shape = (16, 12)
+            self.transition3[3](x[-1])  # shape = (8, 6)
         ]  # New branch derives from the "upper" branch only
 
-        x = self.stage4(x)
+        x = self.stage4(x) # x.shape = (64, 48)
 
         x = self.final_layer(x[0])
 
@@ -195,10 +262,10 @@ if __name__ == '__main__':
 
     # print(model)
 
-    model.load_state_dict(
+    #model.load_state_dict(
         # torch.load('./weights/pose_hrnet_w48_384x288.pth')
-        torch.load('./weights/pose_hrnet_w32_256x192.pth')
-    )
+    #    torch.load('./weights/pose_hrnet_w32_256x192.pth')
+    #)
     print('ok!!')
 
     if torch.cuda.is_available() and False:
@@ -211,6 +278,6 @@ if __name__ == '__main__':
 
     model = model.to(device)
 
-    y = model(torch.ones(1, 3, 384, 288).to(device))
+    y = model(torch.ones(1, 3, 256, 192).to(device))
     print(y.shape)
     print(torch.min(y).item(), torch.mean(y).item(), torch.max(y).item())

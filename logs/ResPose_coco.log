@@ -29,3 +29,7 @@
 2021-10-17 15:57:35,619 root INFO ******************************
 2021-10-17 15:57:35,619 root INFO {'MODEL': {'TYPE': 'ResPose', 'PRETRAINED': ''}, 'DATASET': {'TRAIN': {'TYPE': 'COCO', 'ROOT': '/dataset/PoseEstimation/coco/', 'IMG_PREFIX': 'images', 'ANN': 'annotations/person_keypoints_train2017.json', 'AUG': {'FLIP': True, 'ROT_FACTOR': 45, 'SCALE_FACTOR': 0.25, 'NUM_JOINTS_HALF_BODY': 3, 'PROB_HALF_BODY': 0.3}}, 'VAL': {'TYPE': 'COCO', 'ROOT': '/dataset/PoseEstimation/coco/', 'IMG_PREFIX': 'images', 'ANN': 'annotations/person_keypoints_val2017.json'}, 'TEST': None}, 'DATA_PRESET': {'TYPE': 'simple', 'SIGMA': 2, 'NUM_JOINTS': 17, 'IMAGE_SIZE': [256, 192], 'HEATMAP_SIZE': [64, 48]}, 'TRAIN': {'BEGIN_EPOCH': 0, 'END_EPOCH': 100, 'BATCH_SIZE': 64, 'OPTIMIZER': 'adam', 'LR': 0.001, 'LR_FACTOR': 0.1, 'LR_STEP': [170, 200]}, 'WORK': {'LOG': './logs/ResPose_coco.log', 'BEST_MODEL': './models/respose_coco_best.pth', 'FINAL_MODEL': './models/respose_coco_final.pth'}}
 2021-10-17 15:57:35,620 root INFO ******************************
+2021-10-17 15:59:10,860 root INFO EPOCH 0 [0000:2341] loss: 0.06874073 
+2021-10-17 16:12:02,184 root INFO EPOCH 0 [0100:2341] loss: 0.00563970 
+2021-10-17 16:24:15,745 root INFO EPOCH 0 [0200:2341] loss: 0.00343650 
+2021-10-17 16:36:26,377 root INFO EPOCH 0 [0300:2341] loss: 0.00268704 

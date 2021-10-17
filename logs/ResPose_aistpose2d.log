@@ -54,3 +54,7 @@
 2021-10-17 15:57:41,902 root INFO ******************************
 2021-10-17 15:57:41,903 root INFO {'MODEL': {'TYPE': 'ResPose', 'PRETRAINED': ''}, 'DATASET': {'TRAIN': {'TYPE': 'AISTPose', 'ROOT': '/dataset/PoseEstimation/AISTPose2D/', 'IMG_PREFIX': 'images', 'ANN': 'annotations/train_annotations.json', 'AUG': {'FLIP': True, 'ROT_FACTOR': 45, 'SCALE_FACTOR': 0.25, 'NUM_JOINTS_HALF_BODY': 3, 'PROB_HALF_BODY': 0.3}}, 'VAL': {'TYPE': 'AISTPose', 'ROOT': '/dataset/PoseEstimation/AISTPose2D/', 'IMG_PREFIX': 'images', 'ANN': 'annotations/val_annotations.json'}, 'TEST': None}, 'DATA_PRESET': {'TYPE': 'simple', 'SIGMA': 2, 'NUM_JOINTS': 17, 'IMAGE_SIZE': [256, 192], 'HEATMAP_SIZE': [64, 48]}, 'TRAIN': {'BEGIN_EPOCH': 0, 'END_EPOCH': 100, 'BATCH_SIZE': 64, 'OPTIMIZER': 'adam', 'LR': 0.001, 'LR_FACTOR': 0.1, 'LR_STEP': [170, 200]}, 'WORK': {'LOG': './logs/ResPose_aistpose2d.log', 'BEST_MODEL': './models/respose_aistpose2d_best.pth', 'FINAL_MODEL': './models/respose_aistpose2d_final.pth'}}
 2021-10-17 15:57:41,903 root INFO ******************************
+2021-10-17 15:59:03,750 root INFO EPOCH 0 [0000:4842] loss: 0.07155610 
+2021-10-17 16:11:45,241 root INFO EPOCH 0 [0100:4842] loss: 0.00671109 
+2021-10-17 16:23:58,768 root INFO EPOCH 0 [0200:4842] loss: 0.00426752 
+2021-10-17 16:36:06,964 root INFO EPOCH 0 [0300:4842] loss: 0.00344646 
