@@ -26,19 +26,26 @@ class MSCOCO(data.Dataset):
     def __init__(self,
                  root,
                  ann_file,
+                 images_dir,
+                 cfg,
                  train=True,
                  skip_empty=True):
         
         self._root = root
         self._ann_file = os.path.join(root, ann_file)
+        self._images_dir = images_dir
         self._train = train
         self._skip_empty = skip_empty
         self._check_centers = False
         self.num_class = len(self.CLASSES)
-        self._scale_factor = 0.25
-        self._rot = 45
-        self.num_joints_half_body = 3
-        self.prob_half_body = 0.3
+
+        self._input_size = cfg.DATA_PRESET.IMAGE_SIZE
+        self._output_size = cfg.DATA_PRESET.HEATMAP_SIZE
+
+        self._scale_factor = cfg.DATASET.TRAIN.AUG.SCALE_FACTOR
+        self._rot = cfg.DATASET.TRAIN.AUG.ROT_FACTOR
+        self.num_joints_half_body = cfg.DATASET.TRAIN.AUG.NUM_JOINTS_HALF_BODY
+        self.prob_half_body = cfg.DATASET.TRAIN.AUG.PROB_HALF_BODY
         self._sigma = 2
 
         self.upper_body_ids = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
@@ -47,10 +54,10 @@ class MSCOCO(data.Dataset):
         
         self.transformation = SimpleTransform(
             self, scale_factor = self._scale_factor,
-            input_size = (256, 192),
-            output_size = (64, 48),
+            input_size = self._input_size,
+            output_size = self._output_size,
             rot = self._rot, sigma = self._sigma,
-            train = self._train, loss_type = 'coord'
+            train = self._train
         )
 
         self._items, self._labels = self._load_json()
@@ -89,7 +96,7 @@ class MSCOCO(data.Dataset):
         image_ids = sorted(_coco.getImgIds())
         for entry in _coco.loadImgs(image_ids):
             dirname, filename = entry['coco_url'].split('/')[-2:]
-            abs_path = os.path.join(self._root, 'images', dirname, filename)
+            abs_path = os.path.join(self._root, self._images_dir, dirname, filename)
             label = self._check_load_keypoints(_coco, entry)
             if not label:
                 continue

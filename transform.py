@@ -155,7 +155,7 @@ class SimpleTransform(object):
 
     def __init__(self, dataset, scale_factor,
                  input_size, output_size, rot, sigma,
-                 train, loss_type='heatmap'):
+                 train):
         self._joint_pairs = dataset.joint_pairs
         self._scale_factor = scale_factor
         self._rot = rot
@@ -165,7 +165,6 @@ class SimpleTransform(object):
 
         self._sigma = sigma
         self._train = train
-        self._loss_type = loss_type
         self._aspect_ratio = float(input_size[1]) / input_size[0]  # w / h
         self._feat_stride = np.array(input_size) / np.array(output_size)
 

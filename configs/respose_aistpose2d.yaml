@@ -4,10 +4,10 @@ MODEL:
 
 DATASET:
   TRAIN:
-    TYPE: 'COCO'
-    ROOT: '/dataset/PoseEstimation/coco/'
+    TYPE: 'AISTPose'
+    ROOT: '/dataset/PoseEstimation/AISTPose2D/'
     IMG_PREFIX: 'images'
-    ANN: 'annotations/person_keypoints_train2017.json'
+    ANN: 'annotations/train_annotations.json'
     AUG:
       FLIP: true
       ROT_FACTOR: 45
@@ -15,10 +15,10 @@ DATASET:
       NUM_JOINTS_HALF_BODY: 3
       PROB_HALF_BODY: 0.3
   VAL:
-    TYPE: 'COCO'
-    ROOT: '/dataset/PoseEstimation/coco/'
+    TYPE: 'AISTPose'
+    ROOT: '/dataset/PoseEstimation/AISTPose2D/'
     IMG_PREFIX: 'images'
-    ANN: 'annotations/person_keypoints_val2017.json'
+    ANN: 'annotations/val_annotations.json'
   TEST:
 
 DATA_PRESET:
@@ -42,8 +42,8 @@ TRAIN:
   LR_STEP:
   - 170
   - 200
-
+  
 WORK:
-  LOG: "./logs/ResPose_coco.log"
-  BEST_MODEL: './models/respose_coco_best.pth'
-  FINAL_MODEL: './models/respose_coco_final.pth'
+  LOG: "./logs/ResPose_aistpose2d.log"
+  BEST_MODEL: './models/respose_aistpose2d_best.pth'
+  FINAL_MODEL: './models/respose_aistpose2d_final.pth'

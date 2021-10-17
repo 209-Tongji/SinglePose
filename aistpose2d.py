@@ -24,27 +24,30 @@ class AISTPose2D(data.Dataset):
                    'left_hip', 'right_hip',                                     # 12
                    'left_knee', 'right_knee',                                   # 14
                    'left_ankle', 'right_ankle')                                 # 16
-    def __init__(self, root, ann_file, images_dir, train=True):
+    def __init__(self, root, ann_file, images_dir, cfg, train=True):
         self._root = root
         self._ann_file = os.path.join(root, ann_file)
         self._images_dir = os.path.join(root, images_dir)
 
+        self._input_size = cfg.DATA_PRESET.IMAGE_SIZE
+        self._output_size = cfg.DATA_PRESET.HEATMAP_SIZE
+
         self._train = train
-        self._scale_factor = 0.25
-        self._rot = 45
+        self._scale_factor = cfg.DATASET.TRAIN.AUG.SCALE_FACTOR
+        self._rot = cfg.DATASET.TRAIN.AUG.ROT_FACTOR
         self._sigma = 2
 
-        self.num_joints_half_body = 3
-        self.prob_half_body = 0.3
+        self.num_joints_half_body = cfg.DATASET.TRAIN.AUG.NUM_JOINTS_HALF_BODY
+        self.prob_half_body = cfg.DATASET.TRAIN.AUG.PROB_HALF_BODY
         self.upper_body_ids = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
         self.lower_body_ids = (11, 12, 13, 14, 15, 16)
 
         self.transformation = SimpleTransform(
             self, scale_factor = self._scale_factor,
-            input_size = (256, 192),
-            output_size = (64, 48),
+            input_size = self._input_size,
+            output_size = self._output_size,
             rot = self._rot, sigma = self._sigma,
-            train = self._train, loss_type = 'coord'
+            train = self._train
         )
 
         with open(self._ann_file, "r") as f:
@@ -70,7 +73,7 @@ class AISTPose2D(data.Dataset):
             'width': img.shape[1],
             'height': img.shape[0]
         }
-        
+        '''
         print(label)
         fig = plt.figure()
         ax = fig.add_subplot()
@@ -78,13 +81,14 @@ class AISTPose2D(data.Dataset):
         ax.scatter(label['joints_3d'][:, 0, 0], label['joints_3d'][:, 1, 0])
         fig.savefig("picture_before_trans_{:0>4d}.png".format(idx))
         ax.clear()
-        
+        '''
         target = self.transformation(img, label)
 
         img = target.pop('image')
         bbox = target.pop('bbox')
-        joints_visible = target.pop('target_uv_weight')
         
+        '''
+        joints_visible = target.pop('target_uv_weight')
         label = target.pop('joint_3d')
         image = torch_to_im(img.clone())
         ax.imshow(image)
@@ -100,7 +104,7 @@ class AISTPose2D(data.Dataset):
         hm_img = cv2.applyColorMap(hm_img, cv2.COLORMAP_JET)
         cv2.imwrite("heatmap.png", hm_img)
         plt.close()
-
+        '''
         
         return img, target, img_id, bbox   
 

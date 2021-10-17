@@ -2,18 +2,18 @@ import os
 import torch
 import logging
 import time
-
+import argparse
 from ResPose import PoseResNet
 from loss import MSELoss
 from mscoco import MSCOCO
 from aistpose2d import AISTPose2D
 
 from metrics import DataLogger, calc_accuracy, calc_coord_accuracy, evaluate_mAP
-from config import update_config
+from config import update_config, opt
 
+cfg = update_config(opt.cfg)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 logger = logging.getLogger('')
-cfg = update_config('respose_coco.yaml')
 
 
 def load_pretrained(model, pretrained_path, device):
@@ -32,8 +32,7 @@ def load_pretrained(model, pretrained_path, device):
     return model
 
 def setup_logger(log_file_name):
-    filehandler = logging.FileHandler(
-        './log/{}'.format(log_file_name))
+    filehandler = logging.FileHandler(log_file_name)
     streamhandler = logging.StreamHandler()
 
     formatter = logging.Formatter("%(asctime)s %(name)s %(levelname)s %(message)s")
@@ -43,6 +42,11 @@ def setup_logger(log_file_name):
     logger.setLevel(logging.INFO)
     logger.addHandler(filehandler)
     logger.addHandler(streamhandler)
+
+    logger.info('******************************')
+    logger.info(cfg)
+    logger.info('******************************')
+
 
 def train(train_loader, model, optimizer, criterion, epoch):
     loss_logger = DataLogger()
@@ -55,7 +59,7 @@ def train(train_loader, model, optimizer, criterion, epoch):
             if k == 'type':
                 continue
             labels[k] = labels[k].cuda()
-        outputs = model(inputs, labels)
+        outputs = model(inputs)
         loss = criterion(outputs, labels)
         #acc = calc_coord_accuracy(outputs, labels, (256,192))
         loss_logger.update(loss.item(), inputs.size(0))
@@ -78,19 +82,19 @@ def validate(val_loader, model, criterion):
             if k == 'type':
                 continue
             labels[k] = labels[k].cuda()
-        outputs = model(inputs, labels)
+        outputs = model(inputs)
         loss = criterion(outputs, labels)
         loss_logger.update(loss.item(), inputs.size(0))
         #acc = calc_coord_accuracy(outputs, labels, (256,192))
         #acc_logger.update(acc, inputs.size(0))
     
-        logger.info("--- *Val  Loss : {loss:.4f}".format(loss=loss_logger.avg))
+    logger.info("--- *Val  Loss : {loss:.4f}".format(loss=loss_logger.avg))
 
     return loss_logger.avg
 
 
 def main_worker():
-    setup_logger("ResPose_coco.log")
+    setup_logger(cfg.WORK.LOG)
     model = PoseResNet(50, cfg.DATA_PRESET.NUM_JOINTS, 0.1)
     if cfg.MODEL.PRETRAINED:
         model = load_pretrained(model, cfg.MODEL.PRETRAINED, device)
@@ -102,28 +106,29 @@ def main_worker():
         optimizer = torch.optim.Adam(model.parameters(), lr=cfg.TRAIN.LR)
     elif cfg.TRAIN.OPTIMIZER == 'sgd':
         optimizer = torch.optim.SGD(model.parameters(), lr=cfg.TRAIN.LR, momentum=0.9, weight_decay=0.0001)
-    '''
-    train_dataset = MSCOCO(root='/home/xyh/dataset/coco/', ann_file='annotations/person_keypoints_train2017.json')
-    train_loader = torch.utils.data.DataLoader(
-        train_dataset, batch_size=cfg.TRAIN.BATCH_SIZE, shuffle=True, num_workers=opt.nThreads)
+    
+    if cfg.DATASET.TRAIN.TYPE == 'COCO':
+        train_dataset = MSCOCO(root=cfg.DATASET.TRAIN.ROOT, ann_file=cfg.DATASET.TRAIN.ANN, images_dir=cfg.DATASET.TRAIN.IMG_PREFIX, cfg=cfg, train=True)
+        train_loader = torch.utils.data.DataLoader(
+            train_dataset, batch_size=cfg.TRAIN.BATCH_SIZE, shuffle=True, num_workers=4)
 
-    val_dataset = MSCOCO(root='/home/xyh/dataset/coco/', ann_file='annotations/person_keypoints_val2017.json')
-    val_loader = torch.utils.data.DataLoader(
-        val_dataset, batch_size=20, shuffle=True, num_workers=opt.nThreads)
-    '''
+        val_dataset =  MSCOCO(root=cfg.DATASET.VAL.ROOT, ann_file=cfg.DATASET.VAL.ANN, images_dir=cfg.DATASET.VAL.IMG_PREFIX, cfg=cfg, train=True)
+        val_loader = torch.utils.data.DataLoader(
+            val_dataset, batch_size=cfg.TRAIN.BATCH_SIZE // 2, shuffle=True, num_workers=4)
+    
+    if cfg.DATASET.TRAIN.TYPE == 'AISTPose':
+        train_dataset = AISTPose2D(root=cfg.DATASET.TRAIN.ROOT, ann_file=cfg.DATASET.TRAIN.ANN, images_dir=cfg.DATASET.TRAIN.IMG_PREFIX, cfg=cfg, train=True)
+        train_loader = torch.utils.data.DataLoader(
+            train_dataset, batch_size=cfg.TRAIN.BATCH_SIZE, shuffle=True, num_workers=4)
 
-    train_dataset = AISTPose2D(root="/home/xyh/dataset/AISTPose2D/", ann_file='annotations/train_annotations.json', images_dir="images", train=True)
-    train_loader = torch.utils.data.DataLoader(
-        train_dataset, batch_size=cfg.TRAIN.BATCH_SIZE, shuffle=True, num_workers=8)
-
-    val_dataset =  AISTPose2D(root="/home/xyh/dataset/AISTPose2D/", ann_file='annotations/val_annotations.json', images_dir="images", train=True)
-    val_loader = torch.utils.data.DataLoader(
-        val_dataset, batch_size=20, shuffle=True, num_workers=8)
-
+        val_dataset =  AISTPose2D(root=cfg.DATASET.VAL.ROOT, ann_file=cfg.DATASET.VAL.ANN, images_dir=cfg.DATASET.VAL.IMG_PREFIX, cfg=cfg, train=True)
+        val_loader = torch.utils.data.DataLoader(
+            val_dataset, batch_size=cfg.TRAIN.BATCH_SIZE // 2, shuffle=True, num_workers=4)
+    
     is_best = False
     best_loss = 99999.9
-    best_save = "./models/respose_aistpose2d_best.pth"
-    final_save = "./models/respose_aistpose2d_final.pth"
+    best_save = cfg.WORK.BEST_MODEL
+    final_save = cfg.WORK.FINAL_MODEL
     epochs_since_improvement = 0
     total = len(train_loader)
 
@@ -131,8 +136,8 @@ def main_worker():
         train(train_loader, model, optimizer, criterion, i)
         val_loss = validate(val_loader, model, criterion)
 
-        is_best = val_loss < best_acc
-        best_acc = min(best_loss, val_loss)
+        is_best = val_loss < best_loss
+        best_loss = min(best_loss, val_loss)
 
         if not is_best:
             epochs_since_improvement += 1
@@ -142,8 +147,6 @@ def main_worker():
         else:
             epochs_since_improvement = 0
             torch.save(model.module.state_dict(), best_save)
-        
-        torch.distributed.barrier() 
         
     torch.save(model.module.state_dict(), final_save)
     logger.info("----* End of training. *----")

@@ -1,0 +1,169 @@
+2021-10-16 18:53:08,331 root INFO ******************************
+2021-10-16 18:53:08,332 root INFO {'MODEL': {'TYPE': 'ResPose', 'PRETRAINED': ''}, 'DATASET': {'TRAIN': {'TYPE': 'COCO', 'ROOT': '/dataset/PoseEstimation/coco/', 'IMG_PREFIX': 'images', 'ANN': 'annotations/person_keypoints_train2017.json', 'AUG': {'FLIP': True, 'ROT_FACTOR': 45, 'SCALE_FACTOR': 0.25, 'NUM_JOINTS_HALF_BODY': 3, 'PROB_HALF_BODY': 0.3}}, 'VAL': {'TYPE': 'COCO', 'ROOT': '/dataset/PoseEstimation/coco/', 'IMG_PREFIX': 'images', 'ANN': 'annotations/person_keypoints_val2017.json'}, 'TEST': None}, 'DATA_PRESET': {'TYPE': 'simple', 'SIGMA': 2, 'NUM_JOINTS': 17, 'IMAGE_SIZE': [256, 192], 'HEATMAP_SIZE': [64, 48]}, 'TRAIN': {'BEGIN_EPOCH': 0, 'END_EPOCH': 100, 'BATCH_SIZE': 64, 'OPTIMIZER': 'adam', 'LR': 0.001, 'LR_FACTOR': 0.1, 'LR_STEP': [170, 200]}, 'WORK': {'LOG': './logs/ResPose_coco.log', 'BEST_MODEL': './models/respose_coco_best.pth', 'FINAL_MODEL': './models/respose_coco_final.pth'}}
+2021-10-16 18:53:08,332 root INFO ******************************
+2021-10-16 18:53:22,416 root INFO ******************************
+2021-10-16 18:53:22,417 root INFO {'MODEL': {'TYPE': 'ResPose', 'PRETRAINED': ''}, 'DATASET': {'TRAIN': {'TYPE': 'AISTPose', 'ROOT': '/dataset/PoseEstimation/AISTPose2D/', 'IMG_PREFIX': 'images', 'ANN': 'annotations/train_annotations.json', 'AUG': {'FLIP': True, 'ROT_FACTOR': 45, 'SCALE_FACTOR': 0.25, 'NUM_JOINTS_HALF_BODY': 3, 'PROB_HALF_BODY': 0.3}}, 'VAL': {'TYPE': 'AISTPose', 'ROOT': '/dataset/PoseEstimation/AISTPose2D/', 'IMG_PREFIX': 'images', 'ANN': 'annotations/val_annotations.json'}, 'TEST': None}, 'DATA_PRESET': {'TYPE': 'simple', 'SIGMA': 2, 'NUM_JOINTS': 17, 'IMAGE_SIZE': [256, 192], 'HEATMAP_SIZE': [64, 48]}, 'TRAIN': {'BEGIN_EPOCH': 0, 'END_EPOCH': 100, 'BATCH_SIZE': 64, 'OPTIMIZER': 'adam', 'LR': 0.001, 'LR_FACTOR': 0.1, 'LR_STEP': [170, 200]}, 'WORK': {'LOG': './logs/ResPose_aistpose2d.log', 'BEST_MODEL': './models/respose_aistpose2d_best.pth', 'FINAL_MODEL': './models/respose_aistpose2d_final.pth'}}
+2021-10-16 18:53:22,417 root INFO ******************************
+loading annotations into memory...
+Done (t=35.04s)
+creating index...
+index created!
+loading annotations into memory...
+Done (t=1.15s)
+creating index...
+index created!
+loading annotations into memory...
+Traceback (most recent call last):
+  File "train.py", line 158, in <module>
+    main()
+  File "train.py", line 154, in main
+    main_worker()
+  File "train.py", line 110, in main_worker
+    train_dataset = MSCOCO(root=cfg.DATASET.TRAIN.ROOT, ann_file=cfg.DATASET.TRAIN.ANN, images_dir=cfg.DATASET.TRAIN.IMG_PREFIX, cfg=cfg, train=True)
+  File "/home/xyh/pose/mscoco.py", line 63, in __init__
+    self._items, self._labels = self._load_json()
+  File "/home/xyh/pose/mscoco.py", line 88, in _load_json
+    _coco = COCO(self._ann_file)
+  File "/home/xyh/.conda/envs/xyh/lib/python3.7/site-packages/pycocotools/coco.py", line 86, in __init__
+    assert type(dataset)==dict, 'annotation file format {} not supported'.format(type(dataset))
+AssertionError: annotation file format <class 'list'> not supported
+2021-10-16 18:54:26,846 root INFO EPOCH 0 [0000:2341] loss: 0.06715650 
+2021-10-16 18:57:12,946 root INFO ******************************
+2021-10-16 18:57:12,946 root INFO {'MODEL': {'TYPE': 'ResPose', 'PRETRAINED': ''}, 'DATASET': {'TRAIN': {'TYPE': 'AISTPose', 'ROOT': '/dataset/PoseEstimation/AISTPose2D/', 'IMG_PREFIX': 'images', 'ANN': 'annotations/train_annotations.json', 'AUG': {'FLIP': True, 'ROT_FACTOR': 45, 'SCALE_FACTOR': 0.25, 'NUM_JOINTS_HALF_BODY': 3, 'PROB_HALF_BODY': 0.3}}, 'VAL': {'TYPE': 'AISTPose', 'ROOT': '/dataset/PoseEstimation/AISTPose2D/', 'IMG_PREFIX': 'images', 'ANN': 'annotations/val_annotations.json'}, 'TEST': None}, 'DATA_PRESET': {'TYPE': 'simple', 'SIGMA': 2, 'NUM_JOINTS': 17, 'IMAGE_SIZE': [256, 192], 'HEATMAP_SIZE': [64, 48]}, 'TRAIN': {'BEGIN_EPOCH': 0, 'END_EPOCH': 100, 'BATCH_SIZE': 64, 'OPTIMIZER': 'adam', 'LR': 0.001, 'LR_FACTOR': 0.1, 'LR_STEP': [170, 200]}, 'WORK': {'LOG': './logs/ResPose_aistpose2d.log', 'BEST_MODEL': './models/respose_aistpose2d_best.pth', 'FINAL_MODEL': './models/respose_aistpose2d_final.pth'}}
+2021-10-16 18:57:12,946 root INFO ******************************
+2021-10-16 18:58:36,280 root INFO EPOCH 0 [0000:4842] loss: 0.08578267 
+2021-10-16 19:11:50,242 root INFO EPOCH 0 [0100:2341] loss: 0.00537483 
+2021-10-16 19:18:23,620 root INFO EPOCH 0 [0100:4842] loss: 0.00646320 
+2021-10-16 19:32:33,792 root INFO EPOCH 0 [0200:2341] loss: 0.00328970 
+2021-10-16 19:38:24,144 root INFO EPOCH 0 [0200:4842] loss: 0.00414090 
+2021-10-16 19:53:31,634 root INFO EPOCH 0 [0300:2341] loss: 0.00258747 
+2021-10-16 19:58:41,274 root INFO EPOCH 0 [0300:4842] loss: 0.00336069 
+2021-10-16 20:14:50,047 root INFO EPOCH 0 [0400:2341] loss: 0.00223302 
+2021-10-16 20:19:04,756 root INFO EPOCH 0 [0400:4842] loss: 0.00296730 
+2021-10-16 20:36:05,064 root INFO EPOCH 0 [0500:2341] loss: 0.00201645 
+2021-10-16 20:39:47,536 root INFO EPOCH 0 [0500:4842] loss: 0.00273096 
+2021-10-16 20:56:28,527 root INFO EPOCH 0 [0600:2341] loss: 0.00186947 
+2021-10-16 20:58:21,154 root INFO EPOCH 0 [0600:4842] loss: 0.00257362 
+2021-10-16 21:10:03,499 root INFO EPOCH 0 [0700:2341] loss: 0.00176383 
+2021-10-16 21:11:50,763 root INFO EPOCH 0 [0700:4842] loss: 0.00245941 
+2021-10-16 21:23:55,560 root INFO EPOCH 0 [0800:2341] loss: 0.00168163 
+2021-10-16 21:25:31,885 root INFO EPOCH 0 [0800:4842] loss: 0.00237071 
+2021-10-16 21:36:41,715 root INFO EPOCH 0 [0900:2341] loss: 0.00161696 
+2021-10-16 21:38:16,357 root INFO EPOCH 0 [0900:4842] loss: 0.00229380 
+2021-10-16 21:49:22,058 root INFO EPOCH 0 [1000:2341] loss: 0.00156317 
+2021-10-16 21:50:58,854 root INFO EPOCH 0 [1000:4842] loss: 0.00222343 
+2021-10-16 22:02:06,735 root INFO EPOCH 0 [1100:2341] loss: 0.00151845 
+2021-10-16 22:03:46,352 root INFO EPOCH 0 [1100:4842] loss: 0.00215319 
+2021-10-16 22:14:52,820 root INFO EPOCH 0 [1200:2341] loss: 0.00147900 
+2021-10-16 22:16:27,456 root INFO EPOCH 0 [1200:4842] loss: 0.00208809 
+2021-10-16 22:27:54,000 root INFO EPOCH 0 [1300:2341] loss: 0.00144550 
+2021-10-16 22:29:22,818 root INFO EPOCH 0 [1300:4842] loss: 0.00202682 
+2021-10-16 22:40:53,910 root INFO EPOCH 0 [1400:2341] loss: 0.00141646 
+2021-10-16 22:42:21,572 root INFO EPOCH 0 [1400:4842] loss: 0.00196686 
+2021-10-16 22:53:52,725 root INFO EPOCH 0 [1500:2341] loss: 0.00139027 
+2021-10-16 22:55:18,610 root INFO EPOCH 0 [1500:4842] loss: 0.00190933 
+2021-10-16 23:06:51,875 root INFO EPOCH 0 [1600:2341] loss: 0.00136681 
+2021-10-16 23:08:15,803 root INFO EPOCH 0 [1600:4842] loss: 0.00185667 
+2021-10-16 23:19:43,445 root INFO EPOCH 0 [1700:2341] loss: 0.00134455 
+2021-10-16 23:21:06,115 root INFO EPOCH 0 [1700:4842] loss: 0.00180774 
+2021-10-16 23:32:41,081 root INFO EPOCH 0 [1800:2341] loss: 0.00132366 
+2021-10-16 23:34:00,356 root INFO EPOCH 0 [1800:4842] loss: 0.00176206 
+2021-10-16 23:45:24,165 root INFO EPOCH 0 [1900:2341] loss: 0.00130452 
+2021-10-16 23:46:42,670 root INFO EPOCH 0 [1900:4842] loss: 0.00171862 
+2021-10-16 23:58:18,047 root INFO EPOCH 0 [2000:2341] loss: 0.00128709 
+2021-10-16 23:59:27,884 root INFO EPOCH 0 [2000:4842] loss: 0.00167633 
+2021-10-17 00:11:08,427 root INFO EPOCH 0 [2100:2341] loss: 0.00127074 
+2021-10-17 00:12:17,228 root INFO EPOCH 0 [2100:4842] loss: 0.00163516 
+2021-10-17 00:23:36,591 root INFO EPOCH 0 [2200:2341] loss: 0.00125489 
+2021-10-17 00:24:42,398 root INFO EPOCH 0 [2200:4842] loss: 0.00159504 
+2021-10-17 00:36:10,898 root INFO EPOCH 0 [2300:2341] loss: 0.00124027 
+2021-10-17 00:37:14,661 root INFO EPOCH 0 [2300:4842] loss: 0.00155632 
+2021-10-17 00:41:28,119 root INFO --- *Val  Loss : 0.0009
+Traceback (most recent call last):
+  File "train.py", line 158, in <module>
+    if __name__ == '__main__':
+  File "train.py", line 154, in main
+    def main():
+  File "train.py", line 136, in main_worker
+    train(train_loader, model, optimizer, criterion, i)
+  File "train.py", line 85, in validate
+    outputs = model(inputs)
+  File "/home/xyh/.conda/envs/xyh/lib/python3.7/site-packages/torch/nn/modules/module.py", line 577, in __call__
+    result = self.forward(*input, **kwargs)
+  File "/home/xyh/pose/ResPose.py", line 116, in forward
+    x = self.layer3(x)
+  File "/home/xyh/.conda/envs/xyh/lib/python3.7/site-packages/torch/nn/modules/module.py", line 577, in __call__
+    result = self.forward(*input, **kwargs)
+  File "/home/xyh/.conda/envs/xyh/lib/python3.7/site-packages/torch/nn/modules/container.py", line 100, in forward
+    input = module(input)
+  File "/home/xyh/.conda/envs/xyh/lib/python3.7/site-packages/torch/nn/modules/module.py", line 577, in __call__
+    result = self.forward(*input, **kwargs)
+  File "/home/xyh/pose/ResNet.py", line 69, in forward
+    out = self.bn2(out)
+  File "/home/xyh/.conda/envs/xyh/lib/python3.7/site-packages/torch/nn/modules/module.py", line 577, in __call__
+    result = self.forward(*input, **kwargs)
+  File "/home/xyh/.conda/envs/xyh/lib/python3.7/site-packages/torch/nn/modules/batchnorm.py", line 106, in forward
+    exponential_average_factor, self.eps)
+  File "/home/xyh/.conda/envs/xyh/lib/python3.7/site-packages/torch/nn/functional.py", line 2016, in batch_norm
+    training, momentum, eps, torch.backends.cudnn.enabled
+RuntimeError: CUDA out of memory. Tried to allocate 12.00 MiB (GPU 0; 10.92 GiB total capacity; 10.29 GiB already allocated; 7.00 MiB free; 10.33 GiB reserved in total by PyTorch)
+2021-10-17 00:46:56,469 root INFO EPOCH 0 [2400:4842] loss: 0.00151947 
+2021-10-17 00:55:00,180 root INFO EPOCH 0 [2500:4842] loss: 0.00148436 
+2021-10-17 01:03:07,230 root INFO EPOCH 0 [2600:4842] loss: 0.00145073 
+2021-10-17 01:11:16,032 root INFO EPOCH 0 [2700:4842] loss: 0.00141913 
+2021-10-17 01:19:17,636 root INFO EPOCH 0 [2800:4842] loss: 0.00138929 
+2021-10-17 01:27:18,811 root INFO EPOCH 0 [2900:4842] loss: 0.00136078 
+2021-10-17 01:35:27,789 root INFO EPOCH 0 [3000:4842] loss: 0.00133348 
+2021-10-17 01:43:39,663 root INFO EPOCH 0 [3100:4842] loss: 0.00130781 
+2021-10-17 01:51:55,905 root INFO EPOCH 0 [3200:4842] loss: 0.00128376 
+2021-10-17 02:00:02,315 root INFO EPOCH 0 [3300:4842] loss: 0.00126029 
+2021-10-17 02:08:09,578 root INFO EPOCH 0 [3400:4842] loss: 0.00123841 
+2021-10-17 02:16:17,274 root INFO EPOCH 0 [3500:4842] loss: 0.00121760 
+2021-10-17 02:24:28,767 root INFO EPOCH 0 [3600:4842] loss: 0.00119756 
+2021-10-17 02:32:48,586 root INFO EPOCH 0 [3700:4842] loss: 0.00117819 
+2021-10-17 02:40:53,026 root INFO EPOCH 0 [3800:4842] loss: 0.00115978 
+2021-10-17 02:49:01,451 root INFO EPOCH 0 [3900:4842] loss: 0.00114221 
+2021-10-17 02:57:10,376 root INFO EPOCH 0 [4000:4842] loss: 0.00112529 
+2021-10-17 03:05:11,616 root INFO EPOCH 0 [4100:4842] loss: 0.00110921 
+2021-10-17 03:13:15,889 root INFO EPOCH 0 [4200:4842] loss: 0.00109361 
+2021-10-17 03:21:19,231 root INFO EPOCH 0 [4300:4842] loss: 0.00107822 
+2021-10-17 03:29:22,454 root INFO EPOCH 0 [4400:4842] loss: 0.00106389 
+2021-10-17 03:37:30,120 root INFO EPOCH 0 [4500:4842] loss: 0.00104978 
+2021-10-17 03:45:32,031 root INFO EPOCH 0 [4600:4842] loss: 0.00103639 
+2021-10-17 03:53:38,460 root INFO EPOCH 0 [4700:4842] loss: 0.00102344 
+2021-10-17 04:01:55,598 root INFO EPOCH 0 [4800:4842] loss: 0.00101076 
+2021-10-17 04:05:17,917 root INFO --- *Val  Loss : 0.0004
+Traceback (most recent call last):
+  File "train.py", line 159, in <module>
+    main()
+  File "train.py", line 155, in main
+    main_worker()
+  File "train.py", line 137, in main_worker
+    val_loss = validate(val_loader, model, criterion)
+  File "train.py", line 85, in validate
+    outputs = model(inputs)
+  File "/home/xyh/.conda/envs/xyh/lib/python3.7/site-packages/torch/nn/modules/module.py", line 577, in __call__
+    result = self.forward(*input, **kwargs)
+  File "/home/xyh/pose/ResPose.py", line 116, in forward
+    x = self.layer3(x)
+  File "/home/xyh/.conda/envs/xyh/lib/python3.7/site-packages/torch/nn/modules/module.py", line 577, in __call__
+    result = self.forward(*input, **kwargs)
+  File "/home/xyh/.conda/envs/xyh/lib/python3.7/site-packages/torch/nn/modules/container.py", line 100, in forward
+    input = module(input)
+  File "/home/xyh/.conda/envs/xyh/lib/python3.7/site-packages/torch/nn/modules/module.py", line 577, in __call__
+    result = self.forward(*input, **kwargs)
+  File "/home/xyh/pose/ResNet.py", line 69, in forward
+    out = self.bn2(out)
+  File "/home/xyh/.conda/envs/xyh/lib/python3.7/site-packages/torch/nn/modules/module.py", line 577, in __call__
+    result = self.forward(*input, **kwargs)
+  File "/home/xyh/.conda/envs/xyh/lib/python3.7/site-packages/torch/nn/modules/batchnorm.py", line 106, in forward
+    exponential_average_factor, self.eps)
+  File "/home/xyh/.conda/envs/xyh/lib/python3.7/site-packages/torch/nn/functional.py", line 2016, in batch_norm
+    training, momentum, eps, torch.backends.cudnn.enabled
+RuntimeError: CUDA out of memory. Tried to allocate 12.00 MiB (GPU 0; 10.92 GiB total capacity; 10.29 GiB already allocated; 7.00 MiB free; 10.33 GiB reserved in total by PyTorch)
+2021-10-17 15:57:35,619 root INFO ******************************
+2021-10-17 15:57:35,619 root INFO {'MODEL': {'TYPE': 'ResPose', 'PRETRAINED': ''}, 'DATASET': {'TRAIN': {'TYPE': 'COCO', 'ROOT': '/dataset/PoseEstimation/coco/', 'IMG_PREFIX': 'images', 'ANN': 'annotations/person_keypoints_train2017.json', 'AUG': {'FLIP': True, 'ROT_FACTOR': 45, 'SCALE_FACTOR': 0.25, 'NUM_JOINTS_HALF_BODY': 3, 'PROB_HALF_BODY': 0.3}}, 'VAL': {'TYPE': 'COCO', 'ROOT': '/dataset/PoseEstimation/coco/', 'IMG_PREFIX': 'images', 'ANN': 'annotations/person_keypoints_val2017.json'}, 'TEST': None}, 'DATA_PRESET': {'TYPE': 'simple', 'SIGMA': 2, 'NUM_JOINTS': 17, 'IMAGE_SIZE': [256, 192], 'HEATMAP_SIZE': [64, 48]}, 'TRAIN': {'BEGIN_EPOCH': 0, 'END_EPOCH': 100, 'BATCH_SIZE': 64, 'OPTIMIZER': 'adam', 'LR': 0.001, 'LR_FACTOR': 0.1, 'LR_STEP': [170, 200]}, 'WORK': {'LOG': './logs/ResPose_coco.log', 'BEST_MODEL': './models/respose_coco_best.pth', 'FINAL_MODEL': './models/respose_coco_final.pth'}}
+2021-10-17 15:57:35,620 root INFO ******************************
+2021-10-17 15:57:41,902 root INFO ******************************
+2021-10-17 15:57:41,903 root INFO {'MODEL': {'TYPE': 'ResPose', 'PRETRAINED': ''}, 'DATASET': {'TRAIN': {'TYPE': 'AISTPose', 'ROOT': '/dataset/PoseEstimation/AISTPose2D/', 'IMG_PREFIX': 'images', 'ANN': 'annotations/train_annotations.json', 'AUG': {'FLIP': True, 'ROT_FACTOR': 45, 'SCALE_FACTOR': 0.25, 'NUM_JOINTS_HALF_BODY': 3, 'PROB_HALF_BODY': 0.3}}, 'VAL': {'TYPE': 'AISTPose', 'ROOT': '/dataset/PoseEstimation/AISTPose2D/', 'IMG_PREFIX': 'images', 'ANN': 'annotations/val_annotations.json'}, 'TEST': None}, 'DATA_PRESET': {'TYPE': 'simple', 'SIGMA': 2, 'NUM_JOINTS': 17, 'IMAGE_SIZE': [256, 192], 'HEATMAP_SIZE': [64, 48]}, 'TRAIN': {'BEGIN_EPOCH': 0, 'END_EPOCH': 100, 'BATCH_SIZE': 64, 'OPTIMIZER': 'adam', 'LR': 0.001, 'LR_FACTOR': 0.1, 'LR_STEP': [170, 200]}, 'WORK': {'LOG': './logs/ResPose_aistpose2d.log', 'BEST_MODEL': './models/respose_aistpose2d_best.pth', 'FINAL_MODEL': './models/respose_aistpose2d_final.pth'}}
+2021-10-17 15:57:41,903 root INFO ******************************

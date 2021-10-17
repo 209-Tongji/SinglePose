@@ -9,7 +9,7 @@ class MSELoss(nn.Module):
         self.criterion = nn.MSELoss()
 
     def forward(self, output, labels):
-        pred_hm = output['heatmap']
+        pred_hm = output
         gt_hm = labels['target_hm']
         gt_hm_weight = labels['target_hm_weight']
         loss = 0.5 * self.criterion(pred_hm.mul(gt_hm_weight), gt_hm.mul(gt_hm_weight))
