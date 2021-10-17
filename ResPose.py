@@ -122,15 +122,31 @@ class PoseResNet(nn.Module):
         return x
 
 
+from torchstat import stat
+from thop import profile, clever_format
+from ptflops import get_model_complexity_info
+
 if __name__ == '__main__':
     model = PoseResNet(50, 17, 0.1)
 
+    flops, params = get_model_complexity_info(model, (3,256,192), as_strings=True, print_per_layer_stat=True)  #(3,512,512)输入图片的尺寸
+    print("Flops: {}".format(flops))
+    print("Params: " + params)
+
+    image = torch.randn(1, 3, 256, 192)
+    flops, params = profile(model, inputs=(image,))
+    flops, params = clever_format([flops, params], "%.3f")
+    print(flops, params)
+
+    stat(model, (3, 256, 192))
+
+    '''
     print(model)
 
-    #model.load_state_dict(
-    #    torch.load('./weights/pose_resnet_50_256x192.pth')
-    #)
-    #print('ok!!')
+    model.load_state_dict(
+        torch.load('./weights/pose_resnet_50_256x192.pth')
+    )
+    print('ok!!')
 
     if torch.cuda.is_available():
         torch.backends.cudnn.deterministic = True
@@ -145,3 +161,5 @@ if __name__ == '__main__':
     y = model(torch.ones(1, 3, 256, 192).to(device))
     print(y.shape)
     print(torch.min(y).item(), torch.mean(y).item(), torch.max(y).item())
+    '''
+

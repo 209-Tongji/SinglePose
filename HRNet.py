@@ -255,15 +255,31 @@ class HRNet(nn.Module):
 
         return x
 
+from torchstat import stat
+from thop import profile, clever_format
+
+from torchsummary import summary
+
+from ptflops import get_model_complexity_info
 
 if __name__ == '__main__':
     # model = HRNet(48, 17, 0.1)
     model = HRNet(32, 17, 0.1)
+    flops, params = get_model_complexity_info(model, (3,256,192), as_strings=True, print_per_layer_stat=True)  #(3,512,512)输入图片的尺寸
+    print("Flops: {}".format(flops))
+    print("Params: " + params)
 
-    # print(model)
+    image = torch.randn(1, 3, 256, 192)
+    flops, params = profile(model, inputs=(image,))
+    flops, params = clever_format([flops, params], "%.3f")
+    print(flops, params)
 
+
+    #stat(model, (3, 256, 192))
+
+    '''
     #model.load_state_dict(
-        # torch.load('./weights/pose_hrnet_w48_384x288.pth')
+    #    # torch.load('./weights/pose_hrnet_w48_384x288.pth')
     #    torch.load('./weights/pose_hrnet_w32_256x192.pth')
     #)
     print('ok!!')
@@ -281,3 +297,4 @@ if __name__ == '__main__':
     y = model(torch.ones(1, 3, 256, 192).to(device))
     print(y.shape)
     print(torch.min(y).item(), torch.mean(y).item(), torch.max(y).item())
+    '''
