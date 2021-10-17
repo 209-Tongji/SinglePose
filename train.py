@@ -146,9 +146,9 @@ def main_worker():
             pass
         else:
             epochs_since_improvement = 0
-            torch.save(model.module.state_dict(), best_save)
+            torch.save(model.state_dict(), best_save)
         
-    torch.save(model.module.state_dict(), final_save)
+    torch.save(model.state_dict(), final_save)
     logger.info("----* End of training. *----")
 
 def main():
