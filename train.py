@@ -3,6 +3,7 @@ import torch
 import logging
 import time
 import argparse
+from HRNet import HRNet
 from ResPose import PoseResNet
 from loss import MSELoss
 from mscoco import MSCOCO
@@ -95,7 +96,14 @@ def validate(val_loader, model, criterion):
 
 def main_worker():
     setup_logger(cfg.WORK.LOG)
-    model = PoseResNet(50, cfg.DATA_PRESET.NUM_JOINTS, 0.1)
+    if cfg.MODEL.TYPE == 'ResPose':
+        model = PoseResNet(50, cfg.DATA_PRESET.NUM_JOINTS, 0.1)
+    elif cfg.MODEL.TYPE == 'HRNet':
+        model = HRNet(32, cfg.DATA_PRESET.NUM_JOINTS, 0.1)
+    else:
+        print("Error : unkown model name.")
+        exit(0)
+        
     if cfg.MODEL.PRETRAINED:
         model = load_pretrained(model, cfg.MODEL.PRETRAINED, device)
     model = model.cuda()
@@ -123,7 +131,7 @@ def main_worker():
 
         val_dataset =  AISTPose2D(root=cfg.DATASET.VAL.ROOT, ann_file=cfg.DATASET.VAL.ANN, images_dir=cfg.DATASET.VAL.IMG_PREFIX, cfg=cfg, train=True)
         val_loader = torch.utils.data.DataLoader(
-            val_dataset, batch_size=cfg.TRAIN.BATCH_SIZE // 2, shuffle=True, num_workers=4)
+            val_dataset, batch_size=cfg.TRAIN.BATCH_SIZE // 4, shuffle=True, num_workers=4)
     
     is_best = False
     best_loss = 99999.9

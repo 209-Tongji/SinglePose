@@ -1,0 +1,49 @@
+MODEL:
+  TYPE: 'HRNet'
+  PRETRAINED: ''
+
+DATASET:
+  TRAIN:
+    TYPE: 'COCO'
+    ROOT: '/home/xyh/dataset/coco/'
+    IMG_PREFIX: 'images'
+    ANN: 'annotations/person_keypoints_train2017.json'
+    AUG:
+      FLIP: true
+      ROT_FACTOR: 45
+      SCALE_FACTOR: 0.25
+      NUM_JOINTS_HALF_BODY: 3
+      PROB_HALF_BODY: 0.3
+  VAL:
+    TYPE: 'COCO'
+    ROOT: '/home/xyh/dataset/coco/'
+    IMG_PREFIX: 'images'
+    ANN: 'annotations/person_keypoints_val2017.json'
+  TEST:
+
+DATA_PRESET:
+  TYPE: 'simple'
+  SIGMA: 2
+  NUM_JOINTS: 17
+  IMAGE_SIZE:
+  - 256
+  - 192
+  HEATMAP_SIZE:
+  - 64
+  - 48
+
+TRAIN:
+  BEGIN_EPOCH: 0
+  END_EPOCH: 100
+  BATCH_SIZE: 64
+  OPTIMIZER: 'adam'
+  LR: 0.001
+  LR_FACTOR: 0.1
+  LR_STEP:
+  - 170
+  - 200
+
+WORK:
+  LOG: "./logs/hrnet_coco.log"
+  BEST_MODEL: './models/hrnet_coco_best.pth'
+  FINAL_MODEL: './models/hrnet_coco_final.pth'
