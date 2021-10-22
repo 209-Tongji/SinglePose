@@ -1,0 +1,49 @@
+MODEL:
+  TYPE: 'HRNet'
+  PRETRAINED: ''
+
+DATASET:
+  TRAIN:
+    TYPE: 'AISTPose'
+    ROOT: '/home/xyh/dataset/AISTPose2D/'
+    IMG_PREFIX: 'images'
+    ANN: 'annotations/train_annotations_clean.json'
+    AUG:
+      FLIP: true
+      ROT_FACTOR: 45
+      SCALE_FACTOR: 0.25
+      NUM_JOINTS_HALF_BODY: 3
+      PROB_HALF_BODY: 0.3
+  VAL:
+    TYPE: 'AISTPose'
+    ROOT: '/home/xyh/dataset/AISTPose2D/'
+    IMG_PREFIX: 'images'
+    ANN: 'annotations/val_annotations_clean.json'
+  TEST:
+
+DATA_PRESET:
+  TYPE: 'simple'
+  SIGMA: 2
+  NUM_JOINTS: 17
+  IMAGE_SIZE:
+  - 256
+  - 192
+  HEATMAP_SIZE:
+  - 64
+  - 48
+
+TRAIN:
+  BEGIN_EPOCH: 0
+  END_EPOCH: 100
+  BATCH_SIZE: 64
+  OPTIMIZER: 'adam'
+  LR: 0.001
+  LR_FACTOR: 0.1
+  LR_STEP:
+  - 170
+  - 200
+  
+WORK:
+  LOG: "./logs/hrnet_aistpose2d.log"
+  BEST_MODEL: './models/hrnet_aistpose2d_best.pth'
+  FINAL_MODEL: './models/hrnet_aistpose2d_final.pth'

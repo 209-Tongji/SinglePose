@@ -144,14 +144,36 @@ class AISTPose2D(data.Dataset):
         with open(_annotations_file, "w") as f:
             json.dump(self.new_annotations, f)
 
+    
+    def transfrom_to_coco_ann(self):
+        coco_annotiaons = []
+        for idx in range(self.__len__()):
+            joints = np.zeros([17,3,2],dtype=float)
+            for _i, _joint in enumerate(self._annotations[idx]['joints']):
+                joints[_i,0,0] = _joint[0]
+                joints[_i,1,0] = _joint[1]
+                joints[_i,0,1] = 1.0
+                joints[_i,1,1] = 1.0
 
-
+            label = {
+                'image_id': self._annotations[idx]['image_id'],
+                'joints_3d': joints,
+                'bbox': self._annotations[idx]['bbox'],
+                'width': 1920,
+                'height': 1080
+            }
+            print(idx)
+            coco_annotiaons.append(label)
+        _annotations_file = os.path.join(self._root, "annotations/train_annotations_coco.json")
+        with open(_annotations_file, "w") as f:
+            json.dump(coco_annotiaons, f)
 
 
 if __name__ == '__main__':
-    dataset = AISTPose2D(root="/dataset/PoseEstimation/AISTPose2D/",ann_file='annotations/train_annotations.json',
+    dataset = AISTPose2D(root="/home/xyh/dataset/AISTPose2D/",ann_file='annotations/train_annotations_clean.json',
         images_dir="images", train=True)
-    dataset.__getitem__(11410)
+    dataset.transfrom_to_coco_ann()
+    #dataset.__getitem__(11410)
     #dataset.clean_data()
     #for idx in range(dataset.__len__()):
     #    dataset.__validate__(idx)

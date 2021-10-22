@@ -206,7 +206,7 @@ class SimpleTransform(object):
         tmp_size = self._sigma * 3
 
         for i in range(num_joints):
-            mu_x = int(joints_3d[i, 0, 0] / self._feat_stride[0] + 0.5)
+            mu_x = int(joints_3d[i, 0, 0] / self._feat_stride[0] + 0.5)      #  关键点坐标在热图中的坐标位置
             mu_y = int(joints_3d[i, 1, 0] / self._feat_stride[1] + 0.5)
             # check if any part of the gaussian is in-bounds
             ul = [int(mu_x - tmp_size), int(mu_y - tmp_size)]
@@ -222,13 +222,13 @@ class SimpleTransform(object):
             y = x[:, np.newaxis]
             x0 = y0 = size // 2
             # the gaussian is not normalized, we want the center value to be equal to 1
-            g = np.exp(-((x - x0) ** 2 + (y - y0) ** 2) / (2 * (self._sigma ** 2)))
+            g = np.exp(-((x - x0) ** 2 + (y - y0) ** 2) / (2 * (self._sigma ** 2)))     # 二维高斯分布
 
             # usable gaussian range
-            g_x = max(0, -ul[0]), min(br[0], self._heatmap_size[1]) - ul[0]
+            g_x = max(0, -ul[0]), min(br[0], self._heatmap_size[1]) - ul[0]     # 二维高斯分布范围
             g_y = max(0, -ul[1]), min(br[1], self._heatmap_size[0]) - ul[1]
             # image range
-            img_x = max(0, ul[0]), min(br[0], self._heatmap_size[1])
+            img_x = max(0, ul[0]), min(br[0], self._heatmap_size[1])            # 图片大小范围
             img_y = max(0, ul[1]), min(br[1], self._heatmap_size[0])
 
             v = target_weight[i]
