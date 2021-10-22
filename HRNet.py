@@ -257,9 +257,6 @@ class HRNet(nn.Module):
 
 from torchstat import stat
 from thop import profile, clever_format
-
-from torchsummary import summary
-
 from ptflops import get_model_complexity_info
 
 if __name__ == '__main__':
