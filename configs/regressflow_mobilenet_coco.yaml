@@ -1,6 +1,11 @@
 MODEL:
-  TYPE: 'HRNet'
-  PRETRAINED: '/home/xyh/model/hrnet/pose_hrnet_w32_256x192.pth'
+  TYPE: 'RegressFlow'
+  PRETRAINED: ''
+  BACKBONE:
+    TYPE: 'MobileNet'
+  NUM_FC_FILTERS:
+  - -1
+  HIDDEN_LIST: -1
 
 DATASET:
   TRAIN:
@@ -44,6 +49,6 @@ TRAIN:
   - 200
 
 WORK:
-  LOG: "./logs/hrnet_coco.log"
-  BEST_MODEL: './models/hrnet_coco_best.pth'
-  FINAL_MODEL: './models/hrnet_coco_final.pth'
+  LOG: "./logs/regressflow_mobilenet_coco.log"
+  BEST_MODEL: './models/regressflow_mobilenet_best.pth'
+  FINAL_MODEL: './models/regressflow_mobilenet_final.pth'

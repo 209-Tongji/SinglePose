@@ -202,7 +202,7 @@ def draw_joints(origin_img, coords, bbox):
 
 def inference(img_path):
     model = HRNet(32, 17, 0.1)
-    model = load_pretrained(model, "./models/hrnet_coco_best.pth", device)
+    model = load_pretrained(model, "/home/xyh/model/hrnet/pose_hrnet_w32_256x192.pth", device)
     model.to(device)
     model.eval()
     '''
