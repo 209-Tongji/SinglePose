@@ -1,6 +1,11 @@
 MODEL:
-  TYPE: 'HRNet'
-  PRETRAINED: './models/hrnet_coco_final.pth'
+  TYPE: 'RegressFlow'
+  PRETRAINED: './models/regressflow_mobilenet_best.pth'
+  BACKBONE:
+    TYPE: 'MobileNet'
+  NUM_FC_FILTERS:
+  - -1
+  HIDDEN_LIST: -1
 
 DATASET:
   TRAIN:
@@ -33,17 +38,20 @@ DATA_PRESET:
   - 48
 
 TRAIN:
-  BEGIN_EPOCH: 100
-  END_EPOCH: 200
+  BEGIN_EPOCH: 200
+  END_EPOCH: 400
   BATCH_SIZE: 64
   OPTIMIZER: 'adam'
-  LR: 0.0005
+  LR: 0.00001
   LR_FACTOR: 0.1
   LR_STEP:
   - 170
   - 200
 
+INFERENCE:
+  PRETRAINED: './models/regressflow_mobilenet_best.pth'
+
 WORK:
-  LOG: "./logs/hrnet_coco.log"
-  BEST_MODEL: './models/hrnet_coco_best.pth'
-  FINAL_MODEL: './models/hrnet_coco_final.pth'
+  LOG: "./logs/regressflow_mobilenet_coco.log"
+  BEST_MODEL: './models/regressflow_mobilenet_best.pth'
+  FINAL_MODEL: './models/regressflow_mobilenet_final.pth'

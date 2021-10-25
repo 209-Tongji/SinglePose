@@ -1,14 +1,5 @@
 import torch
 import torch.nn as nn
-import torch.utils.model_zoo as model_zoo
-
-model_urls = {
-    'resnet18': 'https://download.pytorch.org/models/resnet18-5c106cde.pth',
-    'resnet34': 'https://download.pytorch.org/models/resnet34-333f7ec4.pth',
-    'resnet50': 'https://download.pytorch.org/models/resnet50-19c8e357.pth',
-    'resnet101': 'https://download.pytorch.org/models/resnet101-5d3b4d8f.pth',
-    'resnet152': 'https://download.pytorch.org/models/resnet152-b121ed2d.pth',
-}
 
 def conv3x3(in_channels, out_channels, stride=1):
     return nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=stride, padding=1, bias=False)
@@ -131,104 +122,9 @@ class ResNet(nn.Module):
         x = self.layer3(x)
         x = self.layer4(x)
 
-        #print(x.shape)
-        x = self.avgpool(x)
-        #print(x.shape)
-        x = x.view(x.size(0), -1)
-        #print(x.shape)
-        x = self.fc(x)
-        x = self.log_softmax(x)
         return x
 
 
-def ResNet18(pretrained=False, **kwargs):
-    model = ResNet(BasicBlock, [2, 2, 2, 2], **kwargs)
-    if pretrained:
-        model.load_state_dict(model_zoo.load_url(model_urls['resnet18']))
-    return model
-
-def ResNet34(pretrained=False, **kwargs):
-    model = ResNet(BasicBlock, [3, 4, 6, 3], **kwargs)
-    if pretrained:
-        model.load_state_dict(model_zoo.load_url(model_urls['resnet34']))
-    return model
-
-def ResNet50(pretrained=False, **kwargs):
-    model = ResNet(Bottleneck, [3, 4, 6, 3], **kwargs)
-    if pretrained:
-        model.load_state_dict(model_zoo.load_url(model_urls['resnet50']))
-    return model
-
-def ResNet101(pretrained=False, **kwargs):
-    model = ResNet(Bottleneck, [3, 4, 23, 3], **kwargs)
-    if pretrained:
-        model.load_state_dict(model_zoo.load_url(model_urls['resnet101']))
-    return model
-
-def ResNet152(pretrained=False, **kwargs):
-    model = ResNet(Bottleneck, [3, 8, 36, 3], **kwargs)
-    if pretrained:
-        model.load_state_dict(model_zoo.load_url(model_urls['resnet152']))
-    return model 
 
 
-from torchvision import models
-class ResNet_Offical(nn.Module):
-    def __init__(self, class_num=102):
-        super(ResNet_Offical, self).__init__()
-        self.features = self.get_resnet101()
-        self.log_softmax = torch.nn.LogSoftmax(dim=1)
 
-    def get_resnet101(self, class_num=102):
-        model = models.resnet101(pretrained=True)
-        '''
-        for param in model.parameters():
-            param.requires_grad = False
-        for param in model.fc.parameters():
-            param.requires_grad = True
-        '''
-        channels_in = model.fc.in_features
-        model.fc = nn.Linear(channels_in,class_num)
-        return model
-    
-    def forward(self, x):
-        x = self.features(x)
-        x = self.log_softmax(x)
-        return x
-'''
-from thop import profile, clever_format
-
-if __name__ == '__main__':
-    #train_mbgd()
-    #evaluate()
-    model = ResNet50(num_classes = 102)
-    input = torch.randn(1, 3, 224, 224)
-    flops, params = profile(model, inputs=(input,))
-    flops, params = clever_format([flops, params], "%.3f")
-    print(flops, params)
-'''
-'''
-ResNet101:
-flops: 7.832G
-params: 42.709M
-
-ResNet50:
-flops: 4.110G
-params: 23.717M
-'''
-
-'''
-cost time: 44.938807
-pre image cost image: 0.020950
-2062
-2145
-accuracy: 0.9613053613053613
-'''
-
-'''
-cost time: 52.669903
-pre image cost image: 0.024555
-931
-2145
-accuracy:0.43403263403263403
-'''

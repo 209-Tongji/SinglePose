@@ -5,7 +5,11 @@ import time
 import argparse
 from HRNet import HRNet
 from ResPose import PoseResNet
+from RegressFlow import RegressFlow
+
 from loss import MSELoss
+from loss import RLELoss
+
 from mscoco import MSCOCO
 from aistpose2d import AISTPose2D
 
@@ -49,7 +53,7 @@ def setup_logger(log_file_name):
     logger.info('******************************')
 
 
-def train(train_loader, model, optimizer, criterion, epoch):
+def train(train_loader, model, optimizer, criterion, epoch, cfg):
     loss_logger = DataLogger()
     #acc_logger = DataLogger()
     model.train()
@@ -60,7 +64,10 @@ def train(train_loader, model, optimizer, criterion, epoch):
             if k == 'type':
                 continue
             labels[k] = labels[k].cuda()
-        outputs = model(inputs)
+        if cfg.MODEL.TYPE == 'RegressFlow':
+            outputs = model(inputs, labels)
+        else:
+            outputs = model(inputs)
         loss = criterion(outputs, labels)
         #acc = calc_coord_accuracy(outputs, labels, (256,192))
         loss_logger.update(loss.item(), inputs.size(0))
@@ -73,8 +80,8 @@ def train(train_loader, model, optimizer, criterion, epoch):
 
     return loss_logger.avg
 
-def validate(val_loader, model, criterion):
-    loss_logger = DataLogger()
+def validate(val_loader, model, criterion, cfg):
+    acc_logger = DataLogger()
     model.eval()
 
     for i, (inputs, labels, _, bboxes) in enumerate(val_loader):
@@ -83,15 +90,16 @@ def validate(val_loader, model, criterion):
             if k == 'type':
                 continue
             labels[k] = labels[k].cuda()
-        outputs = model(inputs)
-        loss = criterion(outputs, labels)
-        loss_logger.update(loss.item(), inputs.size(0))
-        #acc = calc_coord_accuracy(outputs, labels, (256,192))
-        #acc_logger.update(acc, inputs.size(0))
+        if cfg.MODEL.TYPE == 'RegressFlow':
+            outputs = model(inputs, labels)
+        else:
+            outputs = model(inputs)   
+        acc = calc_coord_accuracy(outputs, labels, (256,192))
+        acc_logger.update(acc, inputs.size(0))
     
-    logger.info("--- *Val  Loss : {loss:.4f}".format(loss=loss_logger.avg))
 
-    return loss_logger.avg
+    logger.info("--- *Val  Acc : {loss:.4f}".format(loss=acc_logger.avg))
+    return acc_logger.avg
 
 
 def main_worker():
@@ -100,6 +108,8 @@ def main_worker():
         model = PoseResNet(50, cfg.DATA_PRESET.NUM_JOINTS, 0.1)
     elif cfg.MODEL.TYPE == 'HRNet':
         model = HRNet(32, cfg.DATA_PRESET.NUM_JOINTS, 0.1)
+    elif cfg.MODEL.TYPE == 'RegressFlow':
+        model = RegressFlow(cfg=cfg)
     else:
         print("Error : unkown model name.")
         exit(0)
@@ -108,7 +118,10 @@ def main_worker():
         model = load_pretrained(model, cfg.MODEL.PRETRAINED, device)
     model = model.cuda()
 
-    criterion = MSELoss().cuda()
+    if cfg.MODEL.TYPE == 'RegressFlow':
+        criterion = RLELoss().cuda()
+    else:
+        criterion = MSELoss().cuda()
 
     if cfg.TRAIN.OPTIMIZER == 'adam':
         optimizer = torch.optim.Adam(model.parameters(), lr=cfg.TRAIN.LR)
@@ -134,18 +147,18 @@ def main_worker():
             val_dataset, batch_size=cfg.TRAIN.BATCH_SIZE // 4, shuffle=True, num_workers=4)
     
     is_best = False
-    best_loss = 99999.9
+    best_acc = -99999.9
     best_save = cfg.WORK.BEST_MODEL
     final_save = cfg.WORK.FINAL_MODEL
     epochs_since_improvement = 0
     total = len(train_loader)
 
     for i in range(cfg.TRAIN.BEGIN_EPOCH, cfg.TRAIN.END_EPOCH):
-        train(train_loader, model, optimizer, criterion, i)
-        val_loss = validate(val_loader, model, criterion)
+        train(train_loader, model, optimizer, criterion, i, cfg=cfg)
+        val_acc = validate(val_loader, model, criterion, cfg=cfg)
 
-        is_best = val_loss < best_loss
-        best_loss = min(best_loss, val_loss)
+        is_best = val_acc > best_acc
+        best_acc = max(best_acc, val_acc)
 
         if not is_best:
             epochs_since_improvement += 1
