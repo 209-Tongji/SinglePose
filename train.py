@@ -81,7 +81,7 @@ def train(train_loader, model, optimizer, criterion, epoch, cfg):
     return loss_logger.avg
 
 def validate(val_loader, model, criterion, cfg):
-    res_logger = DataLogger()
+    acc_logger = DataLogger()
     model.eval()
 
     for i, (inputs, labels, _, bboxes) in enumerate(val_loader):
@@ -92,19 +92,14 @@ def validate(val_loader, model, criterion, cfg):
             labels[k] = labels[k].cuda()
         if cfg.MODEL.TYPE == 'RegressFlow':
             outputs = model(inputs, labels)
-            acc = calc_coord_accuracy(outputs, labels, (256,192))
-            res_logger.update(acc, inputs.size(0))
         else:
-            outputs = model(inputs)
-            loss = criterion(outputs, labels)
-            res_logger.update(loss.item(), inputs.size(0))
+            outputs = model(inputs)   
+        acc = calc_coord_accuracy(outputs, labels, (256,192))
+        acc_logger.update(acc, inputs.size(0))
     
-    if cfg.MODEL.TYPE == 'RegressFlow':
-        logger.info("--- *Val  Acc : {loss:.4f}".format(loss=res_logger.avg))
-        return - res_logger.avg
-    else:
-        logger.info("--- *Val  Loss : {loss:.4f}".format(loss=res_logger.avg))
-        return res_logger.avg
+
+    logger.info("--- *Val  Acc : {loss:.4f}".format(loss=acc_logger.avg))
+    return acc_logger.avg
 
 
 def main_worker():
@@ -152,7 +147,7 @@ def main_worker():
             val_dataset, batch_size=cfg.TRAIN.BATCH_SIZE // 4, shuffle=True, num_workers=4)
     
     is_best = False
-    best_loss = 99999.9
+    best_acc = -99999.9
     best_save = cfg.WORK.BEST_MODEL
     final_save = cfg.WORK.FINAL_MODEL
     epochs_since_improvement = 0
@@ -160,10 +155,10 @@ def main_worker():
 
     for i in range(cfg.TRAIN.BEGIN_EPOCH, cfg.TRAIN.END_EPOCH):
         train(train_loader, model, optimizer, criterion, i, cfg=cfg)
-        val_loss = validate(val_loader, model, criterion, cfg=cfg)
+        val_acc = validate(val_loader, model, criterion, cfg=cfg)
 
-        is_best = val_loss < best_loss
-        best_loss = min(best_loss, val_loss)
+        is_best = val_acc > best_acc
+        best_acc = max(best_acc, val_acc)
 
         if not is_best:
             epochs_since_improvement += 1

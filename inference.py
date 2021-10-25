@@ -5,6 +5,7 @@ import numpy as np
 
 from HRNet import HRNet
 from ResPose import PoseResNet
+from RegressFlow import RegressFlow
 from mscoco import MSCOCO
 from aistpose2d import AISTPose2D
 
@@ -14,6 +15,10 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 from torchvision import transforms
 import torchvision.transforms.functional as TF
 from matplotlib import pyplot as plt
+
+from config import update_config, opt
+
+cfg = update_config(opt.cfg)
 
 def load_pretrained(model, pretrained_path, device):
     if device == torch.device('cpu'):
@@ -175,15 +180,13 @@ def heatmap_to_coord(batch_heatmaps):
     preds *= pred_mask
     return preds, maxvals
 
-def process_output(output, bbox, idx=0):
+def output_to_coords(output, idx=0):
     pred_jts = output.pred_jts[idx]
-    pred_scores = output.maxvals[idx]
-
-    #preds, pred_scores = heatmap_to_coord(pred_jts, pred_scores, (64, 48), bbox)
-    #print(preds)
-
-    return recover_coords(pred_jts, pred_scores, bbox)
-    return preds
+    coords = pred_jts.cpu().detach().numpy()
+    coords = coords.astype(float)
+    coords[:, 0] = (coords[:, 0] + 0.5) * 192
+    coords[:, 1] = (coords[:, 1] + 0.5) * 256
+    return coords
 
 def draw_joints(origin_img, coords, bbox):
     #print(origin_img.size)
@@ -201,39 +204,26 @@ def draw_joints(origin_img, coords, bbox):
 
 
 def inference(img_path):
-    model = HRNet(32, 17, 0.1)
-    model = load_pretrained(model, "/home/xyh/model/hrnet/pose_hrnet_w32_256x192.pth", device)
+    if cfg.MODEL.TYPE == 'HRNet':
+        model = HRNet(32, 17, 0.1)
+    elif cfg.MODEL.TYPE == 'RegressFlow':
+        model = RegressFlow(cfg=cfg)
+    model = load_pretrained(model, cfg.INFERENCE.PRETRAINED, device)
     model.to(device)
     model.eval()
-    '''
-    heatmap_to_coord = get_coord(cfg, cfg.DATA_PRESET.HEATMAP_SIZE)
-    #gt_AP = validate_gt(model, opt, cfg, heatmap_to_coord)
-    #gt_val_dataset = builder.build_dataset(cfg.DATASET.VAL, preset_cfg=cfg.DATA_PRESET, train=False, heatmap2coord=cfg.TEST.HEATMAP2COORD)
-    #img, target, img_id, bbox = gt_val_dataset.__getitem__(0)
-    det_dataset = builder.build_dataset(cfg.DATASET.TEST, preset_cfg=cfg.DATA_PRESET, train=False, opt=opt, heatmap2coord=cfg.TEST.HEATMAP2COORD)
-    img, bbox, _, _, _, _, _ = det_dataset.__getitem__(18)
-    print(bbox.tolist()) #[255.83091735839844, 104.35980224609375, 520.8519287109375, 457.72119140625]
-    img = img.to(device)
-    output = model(img.unsqueeze(0))
-    #pose_coords, pose_scores = heatmap_to_coord(output, bbox.tolist(), idx=0)
-    pose_coords = process_output(output, bbox)
-    print(pose_coords)
-    origin_img = Image.open("/home/xyh/dataset/coco/images/val2017/000000066231.jpg", mode='r').convert('RGB')
-    draw_joints(origin_img, pose_coords, bbox.tolist())
-    '''
+
     origin_img, bboxes = person_detection(img_path)
     img, bbox = make_input(img_path, bboxes, idx=0)
     print(bbox) #[280.48983001708984, 139.78399658203125, 490.63077545166016, 419.971923828125]
     img = img.to(device)
     #print(img)
     output = model(img.unsqueeze(0))
-    
-    preds, maxvals = heatmap_to_coord(output)
-    print(preds, maxvals)
 
-
-
-    coords = recover_coords(preds[0])
+    if cfg.MODEL.TYPE == 'RegressFlow':
+        coords = output_to_coords(output)
+    else:
+        preds, maxvals = heatmap_to_coord(output)
+        coords = recover_coords(preds[0])
     #coords = process_output(output, bbox)
     draw_joints(origin_img, coords, bbox)
 

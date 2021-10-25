@@ -1,6 +1,6 @@
 MODEL:
   TYPE: 'HRNet'
-  PRETRAINED: '/home/xyh/model/hrnet/pose_hrnet_w32_256x192.pth'
+  PRETRAINED: './models/hrnet_coco_final.pth'
 
 DATASET:
   TRAIN:
@@ -33,11 +33,11 @@ DATA_PRESET:
   - 48
 
 TRAIN:
-  BEGIN_EPOCH: 0
-  END_EPOCH: 100
+  BEGIN_EPOCH: 100
+  END_EPOCH: 200
   BATCH_SIZE: 64
   OPTIMIZER: 'adam'
-  LR: 0.001
+  LR: 0.0005
   LR_FACTOR: 0.1
   LR_STEP:
   - 170

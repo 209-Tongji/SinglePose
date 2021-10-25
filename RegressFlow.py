@@ -99,21 +99,21 @@ class RegressFlow(nn.Module):
     def __init__(self, cfg, norm_layer=nn.BatchNorm2d):
         super(RegressFlow, self).__init__()
         print(cfg)
-        self._preset_cfg = cfg['DATA_PRESET']
-        self.fc_dim = cfg['MODEL']['NUM_FC_FILTERS']
+        self._preset_cfg = cfg.DATA_PRESET
+        self.fc_dim = cfg.MODEL.NUM_FC_FILTERS
         self._norm_layer = norm_layer
-        self.num_joints = self._preset_cfg['NUM_JOINTS']
-        self.height_dim = self._preset_cfg['IMAGE_SIZE'][0]
-        self.width_dim = self._preset_cfg['IMAGE_SIZE'][1]
+        self.num_joints = self._preset_cfg.NUM_JOINTS
+        self.height_dim = self._preset_cfg.IMAGE_SIZE[0]
+        self.width_dim = self._preset_cfg.IMAGE_SIZE[1]
 
         if cfg.MODEL.BACKBONE.TYPE == 'ResNet':
 
             #self.preact = ResNet(f"resnet{cfg['NUM_LAYERS']}")
-            self.preact = ResNet(cfg['NUM_LAYERS'])
+            self.preact = ResNet(cfg.NUM_LAYERS.)
             # Imagenet pretrain model
             import torchvision.models as tm  # noqa: F401,F403
-            assert cfg['NUM_LAYERS'] in [18, 34, 50, 101, 152]
-            x = eval(f"tm.resnet{cfg['NUM_LAYERS']}(pretrained=True)")
+            assert cfg.MODEL.BACKBONE.NUM_LAYERS in [18, 34, 50, 101, 152]
+            x = eval(f"tm.resnet{cfg.MODEL.BACKBONE.NUM_LAYERS}(pretrained=True)")
 
             self.feature_channel = {
                 18: 512,
@@ -121,7 +121,7 @@ class RegressFlow(nn.Module):
                 50: 2048,
                 101: 2048,
                 152: 2048
-            }[cfg['NUM_LAYERS']]
+            }[cfg.MODEL.BACKBONE.NUM_LAYERS]
         
         
         elif cfg.MODEL.BACKBONE.TYPE == 'MobileNet':
@@ -131,7 +131,7 @@ class RegressFlow(nn.Module):
 
             self.feature_channel = 1280
 
-        self.hidden_list = cfg['MODEL']['HIDDEN_LIST']
+        self.hidden_list = cfg.MODEL.HIDDEN_LIST
         model_state = self.preact.state_dict()
         state = {k: v for k, v in x.state_dict().items()
                     if k in self.preact.state_dict() and v.size() == self.preact.state_dict()[k].size()}

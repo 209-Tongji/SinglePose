@@ -1,6 +1,6 @@
 MODEL:
   TYPE: 'RegressFlow'
-  PRETRAINED: ''
+  PRETRAINED: './models/regressflow_mobilenet_best.pth'
   BACKBONE:
     TYPE: 'MobileNet'
   NUM_FC_FILTERS:
@@ -38,15 +38,18 @@ DATA_PRESET:
   - 48
 
 TRAIN:
-  BEGIN_EPOCH: 0
-  END_EPOCH: 100
+  BEGIN_EPOCH: 200
+  END_EPOCH: 400
   BATCH_SIZE: 64
   OPTIMIZER: 'adam'
-  LR: 0.001
+  LR: 0.00001
   LR_FACTOR: 0.1
   LR_STEP:
   - 170
   - 200
+
+INFERENCE:
+  PRETRAINED: './models/regressflow_mobilenet_best.pth'
 
 WORK:
   LOG: "./logs/regressflow_mobilenet_coco.log"
