@@ -53,6 +53,6 @@ INFERENCE:
   PRETRAINED: './models/regressflow_resnet_best.pth'
 
 WORK:
-  LOG: "./logs/regressflow_mobilenet_coco.log"
+  LOG: "./logs/regressflow_resnet_coco.log"
   BEST_MODEL: './models/regressflow_resnet_best.pth'
   FINAL_MODEL: './models/regressflow_resnet_final.pth'

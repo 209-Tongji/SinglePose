@@ -5,13 +5,13 @@ import time
 import argparse
 from HRNet import HRNet
 from ResPose import PoseResNet
-from RegressFlow import RegressFlow
+from RegressFlow import RegressFlow, RegressFlow3D
 
-from loss import MSELoss
-from loss import RLELoss
+from loss import MSELoss, RLELoss, RLELoss3D
 
 from mscoco import MSCOCO
 from aistpose2d import AISTPose2D
+from h36m import H36m
 
 from metrics import DataLogger, calc_accuracy, calc_coord_accuracy, evaluate_mAP
 from config import update_config, opt
@@ -66,6 +66,8 @@ def train(train_loader, model, optimizer, criterion, epoch, cfg):
             labels[k] = labels[k].cuda()
         if cfg.MODEL.TYPE == 'RegressFlow':
             outputs = model(inputs, labels)
+        elif cfg.MODEL.TYPE == 'RegressFlow3d':
+            outputs = model(inputs, labels)
         else:
             outputs = model(inputs)
         loss = criterion(outputs, labels)
@@ -92,9 +94,13 @@ def validate(val_loader, model, criterion, cfg):
             labels[k] = labels[k].cuda()
         if cfg.MODEL.TYPE == 'RegressFlow':
             outputs = model(inputs, labels)
+            acc = calc_coord_accuracy(outputs, labels, (256,192))
+        elif cfg.MODEL.TYPE == 'RegressFlow3d':
+            outputs = model(inputs, labels)
+            acc = calc_coord_accuracy(outputs, labels, (256,256,64), output_3d=True)
         else:
             outputs = model(inputs)   
-        acc = calc_coord_accuracy(outputs, labels, (256,192))
+            acc = calc_accuracy(outputs, labels)
         acc_logger.update(acc, inputs.size(0))
     
 
@@ -110,6 +116,8 @@ def main_worker():
         model = HRNet(32, cfg.DATA_PRESET.NUM_JOINTS, 0.1)
     elif cfg.MODEL.TYPE == 'RegressFlow':
         model = RegressFlow(cfg=cfg)
+    elif cfg.MODEL.TYPE == 'RegressFlow3d':
+        model = RegressFlow3D(cfg=cfg)
     else:
         print("Error : unkown model name.")
         exit(0)
@@ -120,6 +128,8 @@ def main_worker():
 
     if cfg.MODEL.TYPE == 'RegressFlow':
         criterion = RLELoss().cuda()
+    elif cfg.MODEL.TYPE == 'RegressFlow3d':
+        criterion = RLELoss3D().cuda()
     else:
         criterion = MSELoss().cuda()
 
@@ -127,6 +137,9 @@ def main_worker():
         optimizer = torch.optim.Adam(model.parameters(), lr=cfg.TRAIN.LR)
     elif cfg.TRAIN.OPTIMIZER == 'sgd':
         optimizer = torch.optim.SGD(model.parameters(), lr=cfg.TRAIN.LR, momentum=0.9, weight_decay=0.0001)
+    
+    lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(
+        optimizer, milestones=cfg.TRAIN.LR_STEP, gamma=cfg.TRAIN.LR_FACTOR)
     
     if cfg.DATASET.TRAIN.TYPE == 'COCO':
         train_dataset = MSCOCO(root=cfg.DATASET.TRAIN.ROOT, ann_file=cfg.DATASET.TRAIN.ANN, images_dir=cfg.DATASET.TRAIN.IMG_PREFIX, cfg=cfg, train=True)
@@ -137,12 +150,21 @@ def main_worker():
         val_loader = torch.utils.data.DataLoader(
             val_dataset, batch_size=cfg.TRAIN.BATCH_SIZE // 2, shuffle=True, num_workers=4)
     
-    if cfg.DATASET.TRAIN.TYPE == 'AISTPose':
+    elif cfg.DATASET.TRAIN.TYPE == 'AISTPose':
         train_dataset = AISTPose2D(root=cfg.DATASET.TRAIN.ROOT, ann_file=cfg.DATASET.TRAIN.ANN, images_dir=cfg.DATASET.TRAIN.IMG_PREFIX, cfg=cfg, train=True)
         train_loader = torch.utils.data.DataLoader(
             train_dataset, batch_size=cfg.TRAIN.BATCH_SIZE, shuffle=True, num_workers=4)
 
         val_dataset =  AISTPose2D(root=cfg.DATASET.VAL.ROOT, ann_file=cfg.DATASET.VAL.ANN, images_dir=cfg.DATASET.VAL.IMG_PREFIX, cfg=cfg, train=True)
+        val_loader = torch.utils.data.DataLoader(
+            val_dataset, batch_size=cfg.TRAIN.BATCH_SIZE // 4, shuffle=True, num_workers=4)
+
+    elif cfg.DATASET.TRAIN.TYPE == 'H36M':
+        train_dataset = H36m(root=cfg.DATASET.TRAIN.ROOT, ann_file=cfg.DATASET.TRAIN.ANN, images_dir=cfg.DATASET.TRAIN.IMG_PREFIX, cfg=cfg, train=True)
+        train_loader = torch.utils.data.DataLoader(
+            train_dataset, batch_size=cfg.TRAIN.BATCH_SIZE, shuffle=True, num_workers=4)
+
+        val_dataset =  H36m(root=cfg.DATASET.VAL.ROOT, ann_file=cfg.DATASET.VAL.ANN, images_dir=cfg.DATASET.VAL.IMG_PREFIX, cfg=cfg, train=True)
         val_loader = torch.utils.data.DataLoader(
             val_dataset, batch_size=cfg.TRAIN.BATCH_SIZE // 4, shuffle=True, num_workers=4)
     
@@ -156,6 +178,8 @@ def main_worker():
     for i in range(cfg.TRAIN.BEGIN_EPOCH, cfg.TRAIN.END_EPOCH):
         train(train_loader, model, optimizer, criterion, i, cfg=cfg)
         val_acc = validate(val_loader, model, criterion, cfg=cfg)
+
+        lr_scheduler.step()
 
         is_best = val_acc > best_acc
         best_acc = max(best_acc, val_acc)
