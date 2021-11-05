@@ -32,6 +32,10 @@ DATA_PRESET:
   - 64
   - 48
 
+LOSS:
+  TYPE: 'MSELoss'
+  HEATMAP2COORD: 'heatmap'
+
 TRAIN:
   BEGIN_EPOCH: 0
   END_EPOCH: 100

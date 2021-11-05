@@ -5,15 +5,25 @@ import math
 class MSELoss(nn.Module):
     ''' MSE Loss
     '''
-    def __init__(self):
+    def __init__(self, heatmap2coord):
         super(MSELoss, self).__init__()
         self.criterion = nn.MSELoss()
+        self.heatmap2coord = heatmap2coord
 
     def forward(self, output, labels):
-        pred_hm = output
-        gt_hm = labels['target_hm']
-        gt_hm_weight = labels['target_hm_weight']
-        loss = 0.5 * self.criterion(pred_hm.mul(gt_hm_weight), gt_hm.mul(gt_hm_weight))
+        pred = output
+        if self.heatmap2coord == 'heatmap':
+            gt_hm = labels['target_hm']
+            gt_hm_weight = labels['target_hm_weight']
+            loss = 0.5 * self.criterion(pred.mul(gt_hm_weight), gt_hm.mul(gt_hm_weight))
+        elif self.heatmap2coord == 'coord':
+            gt_uv = labels['target_uv'].reshape(pred.shape)
+            gt_uv_weight = labels['target_uv_weight'].reshape(pred.shape)
+            loss = 0.5 * self.criterion(pred.mul(gt_uv_weight), gt_uv.mul(gt_uv_weight))
+        elif self.heatmap2coord == 'cpm':
+            gt_hm = torch.stack([labels['target_hm']]*6,dim=1)
+            gt_hm_weight = torch.stack([labels['target_hm_weight']]*6,dim=1)
+            loss = 0.5 * self.criterion(pred.mul(gt_hm_weight), gt_hm.mul(gt_hm_weight))
 
         return loss
 

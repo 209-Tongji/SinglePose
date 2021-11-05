@@ -198,6 +198,13 @@ class SimpleTransform(object):
         img[2].add_(-0.480)
 
         return img, bbox
+    
+    def _get_center_map(self):
+        x = self._input_size[0] // 2
+        y = self._input_size[1] // 2
+        gridy, gridx = np.mgrid[0:self._input_size[0], 0:self._input_size[1]]
+        D2 = (gridx - x) ** 2 + (gridy - y) ** 2
+        return np.exp(-D2 / 2.0 / self._sigma / self._sigma)  # numpy 2d
 
     def _target_generator(self, joints_3d, num_joints):
         target_weight = np.ones((num_joints, 1), dtype=np.float32)
@@ -327,6 +334,8 @@ class SimpleTransform(object):
 
         bbox = _center_scale_to_box(center, scale)
 
+        centermap = self._get_center_map()
+
         img = im_to_torch(img)
         img[0].add_(-0.406)
         img[1].add_(-0.457)
@@ -341,6 +350,7 @@ class SimpleTransform(object):
             'target_uv_weight': torch.from_numpy(target_uv_weight).float(),
             'bbox': torch.Tensor(bbox),
             'joint_3d': joints,
+            'center_map': torch.from_numpy(centermap).float()
         }
 
         return output

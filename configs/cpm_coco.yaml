@@ -1,11 +1,11 @@
 MODEL:
-  TYPE: 'ResPose'
+  TYPE: 'CPM'
   PRETRAINED: ''
 
 DATASET:
   TRAIN:
     TYPE: 'COCO'
-    ROOT: '/dataset/PoseEstimation/coco/'
+    ROOT: '/home/xyh/dataset/coco/'
     IMG_PREFIX: 'images'
     ANN: 'annotations/person_keypoints_train2017.json'
     AUG:
@@ -16,7 +16,7 @@ DATASET:
       PROB_HALF_BODY: 0.3
   VAL:
     TYPE: 'COCO'
-    ROOT: '/dataset/PoseEstimation/coco/'
+    ROOT: '/home/xyh/dataset/coco/'
     IMG_PREFIX: 'images'
     ANN: 'annotations/person_keypoints_val2017.json'
   TEST:
@@ -26,28 +26,28 @@ DATA_PRESET:
   SIGMA: 2
   NUM_JOINTS: 17
   IMAGE_SIZE:
-  - 256
-  - 192
+  - 368
+  - 368
   HEATMAP_SIZE:
-  - 64
-  - 48
+  - 45
+  - 45
 
 LOSS:
   TYPE: 'MSELoss'
-  HEATMAP2COORD: 'heatmap'
+  HEATMAP2COORD: 'cpm'
 
 TRAIN:
   BEGIN_EPOCH: 0
   END_EPOCH: 100
-  BATCH_SIZE: 64
+  BATCH_SIZE: 16
   OPTIMIZER: 'adam'
-  LR: 0.001
+  LR: 0.0005
   LR_FACTOR: 0.1
   LR_STEP:
   - 170
   - 200
 
 WORK:
-  LOG: "./logs/ResPose_coco.log"
-  BEST_MODEL: './models/respose_coco_best.pth'
-  FINAL_MODEL: './models/respose_coco_final.pth'
+  LOG: "./logs/cpm_coco.log"
+  BEST_MODEL: './models/cpm_coco_best.pth'
+  FINAL_MODEL: './models/cpm_coco_final.pth'

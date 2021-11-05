@@ -6,6 +6,8 @@ import argparse
 from models.HRNet import HRNet
 from models.ResPose import PoseResNet
 from models.RegressFlow import RegressFlow, RegressFlow3D
+from models.DeepPose import DeepPose
+from models.CPM import CPM
 
 from loss import MSELoss, RLELoss, RLELoss3D
 
@@ -68,6 +70,8 @@ def train(train_loader, model, optimizer, criterion, epoch, cfg):
             outputs = model(inputs, labels)
         elif cfg.MODEL.TYPE == 'RegressFlow3d':
             outputs = model(inputs, labels)
+        elif cfg.MODEL.TYPE == 'CPM':
+            outputs = model(inputs, labels['center_map'])
         else:
             outputs = model(inputs)
         loss = criterion(outputs, labels)
@@ -98,6 +102,12 @@ def validate(val_loader, model, criterion, cfg):
         elif cfg.MODEL.TYPE == 'RegressFlow3d':
             outputs = model(inputs, labels)
             acc = calc_coord_accuracy(outputs, labels, (256,256,64), output_3d=True)
+        elif cfg.MODEL.TYPE == 'DeepPose':
+            outputs = model(inputs)   
+            acc = calc_coord_accuracy(outputs, labels, (227,227))
+        elif cfg.MODEL.TYPE == 'CPM':
+            outputs = model(inputs, labels['center_map'])
+            acc = calc_accuracy(outputs[5], labels)
         else:
             outputs = model(inputs)   
             acc = calc_accuracy(outputs, labels)
@@ -118,6 +128,10 @@ def main_worker():
         model = RegressFlow(cfg=cfg)
     elif cfg.MODEL.TYPE == 'RegressFlow3d':
         model = RegressFlow3D(cfg=cfg)
+    elif cfg.MODEL.TYPE == 'DeepPose':
+        model = DeepPose(cfg.DATA_PRESET.NUM_JOINTS)
+    elif cfg.MODEL.TYPE == 'CPM':
+        model = CPM(cfg.DATA_PRESET.NUM_JOINTS)
     else:
         print("Error : unkown model name.")
         exit(0)
@@ -131,7 +145,7 @@ def main_worker():
     elif cfg.MODEL.TYPE == 'RegressFlow3d':
         criterion = RLELoss3D().cuda()
     else:
-        criterion = MSELoss().cuda()
+        criterion = MSELoss(cfg.LOSS.HEATMAP2COORD).cuda()
 
     if cfg.TRAIN.OPTIMIZER == 'adam':
         optimizer = torch.optim.Adam(model.parameters(), lr=cfg.TRAIN.LR)

@@ -1,5 +1,6 @@
 import os
 import sys
+from easydict import EasyDict
 
 import numpy as np
 import torch
@@ -153,7 +154,10 @@ def calc_accuracy(output, target):
 
 def calc_coord_accuracy(output, target, hm_shape, output_3d=False, num_joints=None, other_joints=None, root_idx=None):
     """Calculate integral coordinates accuracy."""
-    coords = output.pred_jts.detach().cpu().numpy()
+    if isinstance(output, EasyDict):
+        coords = output.pred_jts.detach().cpu().numpy()
+    else:
+        coords = output.detach().cpu().numpy()
     coords = coords.astype(float)
 
     if output_3d:

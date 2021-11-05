@@ -1,6 +1,6 @@
 import torch
 from torch import nn
-from ResNet import BasicBlock, Bottleneck
+from .ResNet import BasicBlock, Bottleneck
 
 
 resnet_spec = {
