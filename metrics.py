@@ -115,7 +115,7 @@ def evaluate_mAP(res_file, ann_type='bbox', ann_file='person_keypoints_val2017.j
 
 def calc_accuracy(output, target):
     """Calculate heatmap accuracy."""
-    preds = output.heatmap
+    preds = output
     labels = target['target_hm']
     labels_mask = target['target_hm_weight']
     preds = preds * labels_mask

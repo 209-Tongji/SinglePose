@@ -1,0 +1,68 @@
+MODEL:
+  TYPE: 'RegressFlow3d'
+  PRETRAINED: ''
+  BACKBONE:
+    TYPE: 'ResNet'
+    NUM_LAYERS: 50
+  NUM_FC_FILTERS:
+  - -1
+  DEPTH_DIM: 64
+
+DATASET:
+  TRAIN:
+    TYPE: 'H36M'
+    ROOT: '/home/xyh/dataset/h36m/'
+    IMG_PREFIX: 'images'
+    ANN: 'Sample_trainmin_train_Human36M'
+    AUG:
+      FLIP: true
+      ROT_FACTOR: 45
+      SCALE_FACTOR: 0.25
+      NUM_JOINTS_HALF_BODY: 3
+      PROB_HALF_BODY: 0.3
+  VAL:
+    TYPE: 'H36M'
+    ROOT: '/home/xyh/dataset/h36m/'
+    IMG_PREFIX: 'images'
+    ANN: 'Sample_64_test_Human36M'
+  TEST:
+
+DATA_PRESET:
+  TYPE: 'simple_3d'
+  PROTOCOL: 2
+  SIGMA: 2
+  ROT_FACTOR: 30
+  SCALE_FACTOR: 0.3
+  NUM_JOINTS_HALF_BODY: 8
+  PROB_HALF_BODY: -1
+  COLOR_FACTOR: 0.2
+  OCCLUSION: True
+  NUM_JOINTS: 18
+  NORM_TYPE: 'softmax'
+  IMAGE_SIZE:
+  - 256
+  - 256
+  HEATMAP_SIZE:
+  - 64
+  - 64
+  OUT_3D: True
+  HEATMAP2COORD: 'coord'
+
+TRAIN:
+  BEGIN_EPOCH: 0
+  END_EPOCH: 200
+  BATCH_SIZE: 64
+  OPTIMIZER: 'adam'
+  LR: 0.001
+  LR_FACTOR: 0.1
+  LR_STEP:
+  - 90
+  - 120
+
+INFERENCE:
+  PRETRAINED: './models/regressflow3d_resnet_h36m_best.pth'
+
+WORK:
+  LOG: "./logs/regressflow3d_resnet_h36m.log"
+  BEST_MODEL: './models/regressflow3d_resnet_h36m_best.pth'
+  FINAL_MODEL: './models/regressflow3d_resnet_h36m_final.pth'

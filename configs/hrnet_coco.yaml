@@ -1,6 +1,6 @@
 MODEL:
   TYPE: 'HRNet'
-  PRETRAINED: './models/hrnet_coco_final.pth'
+  PRETRAINED: './models/hrnet_coco_best.pth'
 
 DATASET:
   TRAIN:
