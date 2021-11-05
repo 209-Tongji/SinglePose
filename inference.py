@@ -3,11 +3,11 @@ import torch
 import torchvision
 import numpy as np
 
-from HRNet import HRNet
-from ResPose import PoseResNet
-from RegressFlow import RegressFlow
-from mscoco import MSCOCO
-from aistpose2d import AISTPose2D
+from models.HRNet import HRNet
+from models.ResPose import PoseResNet
+from models.RegressFlow import RegressFlow
+from datasets.mscoco import MSCOCO
+from datasets.aistpose2d import AISTPose2D
 
 from PIL import Image, ImageDraw, ImageFont
 

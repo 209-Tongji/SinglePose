@@ -3,15 +3,15 @@ import torch
 import logging
 import time
 import argparse
-from HRNet import HRNet
-from ResPose import PoseResNet
-from RegressFlow import RegressFlow, RegressFlow3D
+from models.HRNet import HRNet
+from models.ResPose import PoseResNet
+from models.RegressFlow import RegressFlow, RegressFlow3D
 
 from loss import MSELoss, RLELoss, RLELoss3D
 
-from mscoco import MSCOCO
-from aistpose2d import AISTPose2D
-from h36m import H36m
+from datasets.mscoco import MSCOCO
+from datasets.aistpose2d import AISTPose2D
+from datasets.h36m import H36m
 
 from metrics import DataLogger, calc_accuracy, calc_coord_accuracy, evaluate_mAP
 from config import update_config, opt
