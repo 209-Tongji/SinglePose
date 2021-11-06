@@ -60,9 +60,9 @@ TRAIN:
   - 120
 
 INFERENCE:
-  PRETRAINED: './models/regressflow3d_resnet_h36m_best.pth'
+  PRETRAINED: './pretrained/regressflow3d_resnet_h36m_best.pth'
 
 WORK:
   LOG: "./logs/regressflow3d_resnet_h36m.log"
-  BEST_MODEL: './models/regressflow3d_resnet_h36m_best.pth'
-  FINAL_MODEL: './models/regressflow3d_resnet_h36m_final.pth'
+  BEST_MODEL: './pretrained/regressflow3d_resnet_h36m_best.pth'
+  FINAL_MODEL: './pretrained/regressflow3d_resnet_h36m_final.pth'

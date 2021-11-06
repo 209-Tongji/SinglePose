@@ -52,5 +52,5 @@ TRAIN:
 
 WORK:
   LOG: "./logs/deeppose_coco.log"
-  BEST_MODEL: './models/deeppose_coco_best.pth'
-  FINAL_MODEL: './models/deeppose_coco_final.pth'
+  BEST_MODEL: './pretrained/deeppose_coco_best.pth'
+  FINAL_MODEL: './pretrained/deeppose_coco_final.pth'

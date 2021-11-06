@@ -1,6 +1,6 @@
 MODEL:
   TYPE: 'HRNet'
-  PRETRAINED: './models/hrnet_coco_best.pth'
+  PRETRAINED: './pretrained/hrnet_coco_best.pth'
 
 DATASET:
   TRAIN:
@@ -48,5 +48,5 @@ TRAIN:
 
 WORK:
   LOG: "./logs/hrnet_coco.log"
-  BEST_MODEL: './models/hrnet_coco_best.pth'
-  FINAL_MODEL: './models/hrnet_coco_final.pth'
+  BEST_MODEL: './pretrained/hrnet_coco_best.pth'
+  FINAL_MODEL: './pretrained/hrnet_coco_final.pth'

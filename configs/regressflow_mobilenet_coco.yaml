@@ -1,6 +1,6 @@
 MODEL:
   TYPE: 'RegressFlow'
-  PRETRAINED: './models/regressflow_mobilenet_best.pth'
+  PRETRAINED: './pretrained/regressflow_mobilenet_best.pth'
   BACKBONE:
     TYPE: 'MobileNet'
   NUM_FC_FILTERS:
@@ -56,5 +56,5 @@ INFERENCE:
 
 WORK:
   LOG: "./logs/regressflow_mobilenet_coco.log"
-  BEST_MODEL: './models/regressflow_mobilenet_best.pth'
-  FINAL_MODEL: './models/regressflow_mobilenet_final.pth'
+  BEST_MODEL: './pretrained/regressflow_mobilenet_best.pth'
+  FINAL_MODEL: './pretrained/regressflow_mobilenet_final.pth'

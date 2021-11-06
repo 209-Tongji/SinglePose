@@ -48,5 +48,5 @@ TRAIN:
   
 WORK:
   LOG: "./logs/hrnet_aistpose2d.log"
-  BEST_MODEL: './models/hrnet_aistpose2d_best.pth'
-  FINAL_MODEL: './models/hrnet_aistpose2d_final.pth'
+  BEST_MODEL: './pretrained/hrnet_aistpose2d_best.pth'
+  FINAL_MODEL: './pretrained/hrnet_aistpose2d_final.pth'

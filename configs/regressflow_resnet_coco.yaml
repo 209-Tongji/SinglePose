@@ -57,5 +57,5 @@ INFERENCE:
 
 WORK:
   LOG: "./logs/regressflow_resnet_coco.log"
-  BEST_MODEL: './models/regressflow_resnet_best.pth'
-  FINAL_MODEL: './models/regressflow_resnet_final.pth'
+  BEST_MODEL: './pretrained/regressflow_resnet_best.pth'
+  FINAL_MODEL: './pretrained/regressflow_resnet_final.pth'
