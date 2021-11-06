@@ -1,8 +1,10 @@
-import os
+import os,sys
 import torch
 import logging
 import time
 import argparse
+
+sys.path.append("./models/")
 from models.HRNet import HRNet
 from models.ResPose import PoseResNet
 from models.RegressFlow import RegressFlow, RegressFlow3D
@@ -98,16 +100,16 @@ def validate(val_loader, model, criterion, cfg):
             labels[k] = labels[k].cuda()
         if cfg.MODEL.TYPE == 'RegressFlow':
             outputs = model(inputs, labels)
-            acc = calc_coord_accuracy(outputs, labels, (256,192))
+            acc = calc_coord_accuracy(outputs, labels, (cfg.DATA_PRESET.IMAGE_SIZE[0],cfg.DATA_PRESET.IMAGE_SIZE[1]))
         elif cfg.MODEL.TYPE == 'RegressFlow3d':
             outputs = model(inputs, labels)
             acc = calc_coord_accuracy(outputs, labels, (256,256,64), output_3d=True)
         elif cfg.MODEL.TYPE == 'DeepPose':
             outputs = model(inputs)   
-            acc = calc_coord_accuracy(outputs, labels, (227,227))
+            acc = calc_coord_accuracy(outputs, labels, (cfg.DATA_PRESET.IMAGE_SIZE[0],cfg.DATA_PRESET.IMAGE_SIZE[1]))
         elif cfg.MODEL.TYPE == 'CPM':
             outputs = model(inputs, labels['center_map'])
-            acc = calc_accuracy(outputs[5], labels)
+            acc = calc_accuracy(outputs[:,5,:,:], labels)
         else:
             outputs = model(inputs)   
             acc = calc_accuracy(outputs, labels)
@@ -129,9 +131,10 @@ def main_worker():
     elif cfg.MODEL.TYPE == 'RegressFlow3d':
         model = RegressFlow3D(cfg=cfg)
     elif cfg.MODEL.TYPE == 'DeepPose':
-        model = DeepPose(cfg.DATA_PRESET.NUM_JOINTS)
+        model = DeepPose(cfg=cfg)
     elif cfg.MODEL.TYPE == 'CPM':
         model = CPM(cfg.DATA_PRESET.NUM_JOINTS)
+
     else:
         print("Error : unkown model name.")
         exit(0)

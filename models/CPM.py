@@ -16,8 +16,8 @@ import torch
 class CPM(nn.Module):
     def __init__(self, out_c=21):
         super(CPM, self).__init__()
-        self.img_h = 368
-        self.img_w = 368
+        self.img_h = 224
+        self.img_w = 224
         self.out_c = out_c
         self.pool_center_lower = nn.AvgPool2d(kernel_size=9, stride=8)
 
@@ -250,11 +250,20 @@ def mse_loss(pred_6, target, weight=None, weighted_loss=False, size_average=True
         loss /= torch.sum(mask)
     return loss
 
+from thop import profile, clever_format
+from ptflops import get_model_complexity_info
 
 if __name__ == "__main__":
-    net = CPM(out_c=21)
-
-    x = torch.randn(2, 3, 368, 368)  # batch size = 2
-    c = torch.randn(2, 368, 368)  # batch size = 2
-    y = net(x, c)
+    model = CPM(out_c=17)
+    '''
+    x = torch.randn(2, 3, 224, 224)  # batch size = 2
+    c = torch.randn(2, 224, 224)  # batch size = 2
+    y = model(x, c)
     print(y.shape)  # torch (2, 6, 21, 45, 45)
+    '''
+    image = torch.randn(1, 3, 224, 224)
+    center_map = torch.randn(1, 224, 224)
+    flops, params = profile(model, inputs=(image, center_map))
+    flops, params = clever_format([flops, params], "%.3f")
+    print(flops, params)
+    

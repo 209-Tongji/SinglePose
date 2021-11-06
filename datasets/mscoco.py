@@ -48,6 +48,10 @@ class MSCOCO(data.Dataset):
         self.prob_half_body = cfg.DATASET.TRAIN.AUG.PROB_HALF_BODY
         self._sigma = 2
 
+        self._need_heatmap = cfg.DATA_PRESET.NEED_HEATMAP
+        self._need_coord = cfg.DATA_PRESET.NEED_COORD
+        self._need_centermap = cfg.DATA_PRESET.NEED_CENTERMAP
+
         self.upper_body_ids = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
         self.lower_body_ids = (11, 12, 13, 14, 15, 16)
 
@@ -57,7 +61,8 @@ class MSCOCO(data.Dataset):
             input_size = self._input_size,
             output_size = self._output_size,
             rot = self._rot, sigma = self._sigma,
-            train = self._train
+            train = self._train,
+            need_heatmap=self._need_heatmap, need_coord=self._need_coord, need_centermap=self._need_centermap
         )
 
         self._items, self._labels = self._load_json()

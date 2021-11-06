@@ -1,6 +1,8 @@
 MODEL:
-  TYPE: 'CPM'
+  TYPE: 'DeepPose'
   PRETRAINED: ''
+  BACKBONE:
+    TYPE: 'MobileNet'
 
 DATASET:
   TRAIN:
@@ -26,23 +28,23 @@ DATA_PRESET:
   SIGMA: 2
   NUM_JOINTS: 17
   IMAGE_SIZE:
-  - 224
-  - 224
+  - 256
+  - 192
   HEATMAP_SIZE:
-  - 27
-  - 27
-  NEED_HEATMAP: true
-  NEED_COORD: false
-  NEED_CENTERMAP: true
+  - 64
+  - 48
+  NEED_HEATMAP: false
+  NEED_COORD: true
+  NEED_CENTERMAP: false
 
 LOSS:
   TYPE: 'MSELoss'
-  HEATMAP2COORD: 'cpm'
+  HEATMAP2COORD: 'coord'
 
 TRAIN:
   BEGIN_EPOCH: 0
   END_EPOCH: 100
-  BATCH_SIZE: 32
+  BATCH_SIZE: 64
   OPTIMIZER: 'adam'
   LR: 0.0005
   LR_FACTOR: 0.1
@@ -51,6 +53,6 @@ TRAIN:
   - 200
 
 WORK:
-  LOG: "./logs/cpm_coco.log"
-  BEST_MODEL: './models/cpm_coco_best.pth'
-  FINAL_MODEL: './models/cpm_coco_final.pth'
+  LOG: "./logs/mobiledeeppose_coco.log"
+  BEST_MODEL: './models/mobiledeeppose_coco_best.pth'
+  FINAL_MODEL: './models/mobiledeeppose_coco_final.pth'

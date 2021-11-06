@@ -156,7 +156,7 @@ class SimpleTransform(object):
 
     def __init__(self, dataset, scale_factor,
                  input_size, output_size, rot, sigma,
-                 train):
+                 train, need_heatmap, need_coord, need_centermap):
         self._joint_pairs = dataset.joint_pairs
         self._scale_factor = scale_factor
         self._rot = rot
@@ -171,6 +171,10 @@ class SimpleTransform(object):
 
         self.pixel_std = 1
         self.align_coord = True
+
+        self._need_heatmap = need_heatmap
+        self._need_coord =  need_coord
+        self._need_centermap = need_centermap
 
         if train:
             self.num_joints_half_body = dataset.num_joints_half_body
@@ -329,12 +333,16 @@ class SimpleTransform(object):
                 joints[i, 0:2, 0] = affine_transform(joints[i, 0:2, 0], trans)
 
         # generate training targets
-        target_hm, target_hm_weight = self._target_generator(joints.copy(), self.num_joints)
-        target_uv, target_uv_weight, target_visible, target_visible_weight = self._integral_target_generator(joints.copy(), self.num_joints, inp_h, inp_w)
+        if self._need_heatmap:
+            target_hm, target_hm_weight = self._target_generator(joints.copy(), self.num_joints)
+        if self._need_coord:
+            target_uv, target_uv_weight, target_visible, target_visible_weight = self._integral_target_generator(joints.copy(), self.num_joints, inp_h, inp_w)
+
 
         bbox = _center_scale_to_box(center, scale)
 
-        centermap = self._get_center_map()
+        if self._need_centermap:
+            centermap = self._get_center_map()
 
         img = im_to_torch(img)
         img[0].add_(-0.406)
@@ -344,13 +352,13 @@ class SimpleTransform(object):
         output = {
             'type': '2d_data',
             'image': img,
-            'target_hm': torch.from_numpy(target_hm).float(),
-            'target_hm_weight': torch.from_numpy(target_hm_weight).float(),
-            'target_uv': torch.from_numpy(target_uv).float(),
-            'target_uv_weight': torch.from_numpy(target_uv_weight).float(),
+            'target_hm': torch.from_numpy(target_hm).float() if self._need_heatmap else torch.tensor([]),
+            'target_hm_weight': torch.from_numpy(target_hm_weight).float() if self._need_heatmap else torch.tensor([]),
+            'target_uv': torch.from_numpy(target_uv).float() if self._need_coord else torch.tensor([]),
+            'target_uv_weight': torch.from_numpy(target_uv_weight).float() if self._need_coord else torch.tensor([]),
             'bbox': torch.Tensor(bbox),
             'joint_3d': joints,
-            'center_map': torch.from_numpy(centermap).float()
+            'center_map': torch.from_numpy(centermap).float() if self._need_centermap else torch.tensor([])
         }
 
         return output
