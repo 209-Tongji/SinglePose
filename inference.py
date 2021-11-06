@@ -1,13 +1,14 @@
-
+import sys
+sys.path.append("./models/")
 import torch
 import torchvision
 import numpy as np
 
 from models.HRNet import HRNet
-from models.ResPose import PoseResNet
 from models.RegressFlow import RegressFlow
 from datasets.mscoco import MSCOCO
 from datasets.aistpose2d import AISTPose2D
+from datasets.h36m import H36m
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -189,11 +190,8 @@ def output_to_coords(output, idx=0):
     return coords
 
 def draw_joints(origin_img, coords, bbox):
-    #print(origin_img.size)
-    #origin_img.save("origin.png")
     img = TF.crop(origin_img, bbox[1], bbox[0], bbox[3]-bbox[1], bbox[2]-bbox[0])
     img = TF.resize(img, (256,192))
-    #img.save("bbox.png")
     print(coords)
     fig = plt.figure()
     ax = fig.add_subplot()
@@ -202,6 +200,13 @@ def draw_joints(origin_img, coords, bbox):
     fig.savefig("./res.png")
     plt.close()
 
+def draw_origin_joints(origin_img, coords):
+    fig = plt.figure()
+    ax = fig.add_subplot()
+    ax.imshow(origin_img)
+    ax.scatter(coords[:,0], coords[:,1])
+    fig.savefig("./res3d.png")
+    plt.close()
 
 def inference(img_path):
     if cfg.MODEL.TYPE == 'HRNet':
@@ -227,5 +232,19 @@ def inference(img_path):
     #coords = process_output(output, bbox)
     draw_joints(origin_img, coords, bbox)
 
+
+import copy
+import scipy
+
+def read_dataset():
+    dataset = H36m(root=cfg.DATASET.TRAIN.ROOT, ann_file=cfg.DATASET.TRAIN.ANN, images_dir=cfg.DATASET.TRAIN.IMG_PREFIX, cfg=cfg, train=True)
+    img_path = dataset._items[1234]
+    img_id = int(dataset._labels[1234]['img_id'])
+    label = copy.deepcopy(dataset._labels[1234])
+    joints_img = label['joint_img']
+    img = scipy.misc.imread(img_path, mode='RGB')
+    draw_origin_joints(img, joints_img[:,:2])
+
 if __name__ == '__main__':
-    inference("./temp/0521.png")
+    #inference("./temp/0521.png")
+    read_dataset()

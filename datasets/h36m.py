@@ -369,3 +369,7 @@ class H36m(data.Dataset):
             json.dump(pred_save, f)
         print("Test result is saved at " + result_dir)
         return tot_err
+
+
+if __name__ == '__main__':
+    pass
