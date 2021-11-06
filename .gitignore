@@ -8,3 +8,4 @@ nohup.out
 *.png
 *.jpg
 *.jpeg
+*.pyc

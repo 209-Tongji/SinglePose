@@ -1,11 +1,15 @@
 MODEL:
-  TYPE: 'ResPose'
+  TYPE: 'Hourglass'
   PRETRAINED: ''
+  BACKBONE:
+    TYPE: 'ResNet'
+    NUM_LAYERS: 50
+
 
 DATASET:
   TRAIN:
     TYPE: 'COCO'
-    ROOT: '/dataset/PoseEstimation/coco/'
+    ROOT: '/home/xyh/dataset/coco/'
     IMG_PREFIX: 'images'
     ANN: 'annotations/person_keypoints_train2017.json'
     AUG:
@@ -16,7 +20,7 @@ DATASET:
       PROB_HALF_BODY: 0.3
   VAL:
     TYPE: 'COCO'
-    ROOT: '/dataset/PoseEstimation/coco/'
+    ROOT: '/home/xyh/dataset/coco/'
     IMG_PREFIX: 'images'
     ANN: 'annotations/person_keypoints_val2017.json'
   TEST:
@@ -52,5 +56,5 @@ TRAIN:
 
 WORK:
   LOG: "./logs/ResPose_coco.log"
-  BEST_MODEL: './models/respose_coco_best.pth'
-  FINAL_MODEL: './models/respose_coco_final.pth'
+  BEST_MODEL: './pretrained/respose_coco_best.pth'
+  FINAL_MODEL: './pretrained/respose_coco_final.pth'

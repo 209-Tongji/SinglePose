@@ -6,7 +6,7 @@ import argparse
 
 sys.path.append("./models/")
 from models.HRNet import HRNet
-from models.ResPose import PoseResNet
+from models.Hourglass import Hourglass
 from models.RegressFlow import RegressFlow, RegressFlow3D
 from models.DeepPose import DeepPose
 from models.CPM import CPM
@@ -122,8 +122,8 @@ def validate(val_loader, model, criterion, cfg):
 
 def main_worker():
     setup_logger(cfg.WORK.LOG)
-    if cfg.MODEL.TYPE == 'ResPose':
-        model = PoseResNet(50, cfg.DATA_PRESET.NUM_JOINTS, 0.1)
+    if cfg.MODEL.TYPE == 'Hourglass':
+        model = Hourglass(cfg=cfg)
     elif cfg.MODEL.TYPE == 'HRNet':
         model = HRNet(32, cfg.DATA_PRESET.NUM_JOINTS, 0.1)
     elif cfg.MODEL.TYPE == 'RegressFlow':
