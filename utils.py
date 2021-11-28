@@ -325,9 +325,10 @@ def draw_2Dimg(img, kpt, display=None):
         cv2.waitKey(3)
     return im
 
-def draw_3Dimg(pos, image, display=None, kpt2D=None):
+def draw_3Dimg(pos, image, output=None, display=None, kpt2D=None):
     from mpl_toolkits.mplot3d import Axes3D # projection 3D 必须要这个
-    from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+    #from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+    from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
     fig = plt.figure(figsize=(12,6))
     canvas = FigureCanvas(fig)
 
@@ -340,19 +341,25 @@ def draw_3Dimg(pos, image, display=None, kpt2D=None):
 
     # 3D
     ax = fig.add_subplot(122, projection='3d')
-    radius = 1.7
+    radius = 1200
     ax.view_init(elev=15., azim=70.)
-    ax.set_xlim3d([-radius/2, radius/2])
-    ax.set_zlim3d([0, radius])
-    ax.set_ylim3d([-radius/2, radius/2])
-    ax.set_aspect('equal')
+    ax.set_xlim3d([0, radius])
+    ax.set_zlim3d([-radius/2, radius/2])
+    ax.set_ylim3d([0, radius])
+    ax.set_aspect('auto')
     # 坐标轴刻度
     ax.set_xticklabels([])
     ax.set_yticklabels([])
     ax.set_zticklabels([])
+    ax.set_xlabel('x')
+    ax.set_ylabel('y')
+    ax.set_zlabel('z')
+    ax.view_init(235,235)
     ax.dist = 7.5
     parents = common.skeleton_parents
     joints_right = common.joints_right
+
+    print(pos)
 
     for j, j_parent in enumerate(parents):
         if j_parent == -1:
@@ -369,5 +376,7 @@ def draw_3Dimg(pos, image, display=None, kpt2D=None):
     if display:
         cv2.imshow('im', image)
         cv2.waitKey(3)
+    if output:
+        cv2.imwrite(output, image)
 
     return image

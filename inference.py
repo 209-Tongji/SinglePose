@@ -5,7 +5,7 @@ import torchvision
 import numpy as np
 
 from models.HRNet import HRNet
-from models.RegressFlow import RegressFlow
+from models.RegressFlow import RegressFlow, RegressFlow3D
 from datasets.mscoco import MSCOCO
 from datasets.aistpose2d import AISTPose2D
 from datasets.h36m import H36m
@@ -181,12 +181,17 @@ def heatmap_to_coord(batch_heatmaps):
     preds *= pred_mask
     return preds, maxvals
 
-def output_to_coords(output, idx=0):
+def output_to_coords(output, is3d=False, idx=0):
     pred_jts = output.pred_jts[idx]
     coords = pred_jts.cpu().detach().numpy()
     coords = coords.astype(float)
-    coords[:, 0] = (coords[:, 0] + 0.5) * 192
-    coords[:, 1] = (coords[:, 1] + 0.5) * 256
+    if is3d:
+        coords[:, 0] = (coords[:, 0] + 0.5) * 256
+        coords[: ,1] = (coords[:, 1] + 0.5) * 256
+        coords[:, 2] = (coords[:, 2] + 0.5) * 64
+    else: 
+        coords[:, 0] = (coords[:, 0] + 0.5) * 192
+        coords[:, 1] = (coords[:, 1] + 0.5) * 256
     return coords
 
 def draw_joints(origin_img, coords, bbox):
@@ -199,6 +204,12 @@ def draw_joints(origin_img, coords, bbox):
     ax.scatter(coords[:,0], coords[:,1])
     fig.savefig("./res.png")
     plt.close()
+
+def draw_joints3d(origin_img, coords, bbox):
+    img = TF.crop(origin_img, bbox[1], bbox[0], bbox[3]-bbox[1], bbox[2]-bbox[0])
+    img = TF.resize(img, (256,192))
+    draw_3Dimg(coords, img, output="res3d.png")
+
 
 def draw_origin_joints(origin_img, coords):
     fig = plt.figure()
@@ -213,6 +224,8 @@ def inference(img_path):
         model = HRNet(32, 17, 0.1)
     elif cfg.MODEL.TYPE == 'RegressFlow':
         model = RegressFlow(cfg=cfg)
+    elif cfg.MODEL.TYPE == 'RegressFlow3d':
+        model = RegressFlow3D(cfg=cfg)
     model = load_pretrained(model, cfg.INFERENCE.PRETRAINED, device)
     model.to(device)
     model.eval()
@@ -226,24 +239,37 @@ def inference(img_path):
 
     if cfg.MODEL.TYPE == 'RegressFlow':
         coords = output_to_coords(output)
+    if cfg.MODEL.TYPE == 'RegressFlow3d':
+        coords = output_to_coords(output, is3d=True)
     else:
         preds, maxvals = heatmap_to_coord(output)
         coords = recover_coords(preds[0])
     #coords = process_output(output, bbox)
-    draw_joints(origin_img, coords, bbox)
+
+    if cfg.MODEL.TYPE == 'RegressFlow3d':
+        draw_joints3d(origin_img, coords, bbox)
+    else:
+        draw_joints(origin_img, coords, bbox)
 
 
 import copy
 import scipy
+from utils import draw_3Dimg
 
 def read_dataset():
     dataset = H36m(root=cfg.DATASET.TRAIN.ROOT, ann_file=cfg.DATASET.TRAIN.ANN, images_dir=cfg.DATASET.TRAIN.IMG_PREFIX, cfg=cfg, train=True)
-    img_path = dataset._items[1234]
-    img_id = int(dataset._labels[1234]['img_id'])
-    label = copy.deepcopy(dataset._labels[1234])
+    dataset.__getitem__(12345)
+    '''
+    img_path = dataset._items[12345]
+    img_id = int(dataset._labels[12345]['img_id'])
+    label = copy.deepcopy(dataset._labels[12345])
     joints_img = label['joint_img']
+    joints_cam = label['joint_cam']
     img = scipy.misc.imread(img_path, mode='RGB')
     draw_origin_joints(img, joints_img[:,:2])
+    print(img.shape)
+    #draw_3Dimg(joints_img, img, output="res3d.png")
+    '''
 
 if __name__ == '__main__':
     #inference("./temp/0521.png")

@@ -7,6 +7,7 @@ import pickle as pk
 import cv2
 import numpy as np
 import scipy.misc
+from torch.nn.modules.module import T
 import torch.utils.data as data
 from utils import bbox_clip_xyxy, bbox_xywh_to_xyxy
 from utils import (cam2pixel, pixel2cam,

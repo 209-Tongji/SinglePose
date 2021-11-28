@@ -1,6 +1,6 @@
 MODEL:
   TYPE: 'RegressFlow3d'
-  PRETRAINED: ''
+  PRETRAINED: 'pretrained/regressflow3d_resnet_h36m_best.pth'
   BACKBONE:
     TYPE: 'ResNet'
     NUM_LAYERS: 50
@@ -36,7 +36,7 @@ DATA_PRESET:
   NUM_JOINTS_HALF_BODY: 8
   PROB_HALF_BODY: -1
   COLOR_FACTOR: 0.2
-  OCCLUSION: True
+  OCCLUSION: False
   NUM_JOINTS: 18
   NORM_TYPE: 'softmax'
   IMAGE_SIZE:
