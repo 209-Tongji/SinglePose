@@ -16,6 +16,7 @@ from loss import MSELoss, RLELoss, RLELoss3D
 from datasets.mscoco import MSCOCO
 from datasets.aistpose2d import AISTPose2D
 from datasets.h36m import H36m
+from datasets.mixed_dataset import MixedDataset
 
 from metrics import DataLogger, calc_accuracy, calc_coord_accuracy, evaluate_mAP
 from config import update_config, opt
@@ -178,6 +179,15 @@ def main_worker():
 
     elif cfg.DATASET.TRAIN.TYPE == 'H36M':
         train_dataset = H36m(root=cfg.DATASET.TRAIN.ROOT, ann_file=cfg.DATASET.TRAIN.ANN, images_dir=cfg.DATASET.TRAIN.IMG_PREFIX, cfg=cfg, train=True)
+        train_loader = torch.utils.data.DataLoader(
+            train_dataset, batch_size=cfg.TRAIN.BATCH_SIZE, shuffle=True, num_workers=4)
+
+        val_dataset =  H36m(root=cfg.DATASET.VAL.ROOT, ann_file=cfg.DATASET.VAL.ANN, images_dir=cfg.DATASET.VAL.IMG_PREFIX, cfg=cfg, train=True)
+        val_loader = torch.utils.data.DataLoader(
+            val_dataset, batch_size=cfg.TRAIN.BATCH_SIZE // 4, shuffle=True, num_workers=4)
+
+    elif cfg.DATASET.TRAIN.TYPE == 'Mixed':
+        train_dataset = MixedDataset(cfg=cfg)
         train_loader = torch.utils.data.DataLoader(
             train_dataset, batch_size=cfg.TRAIN.BATCH_SIZE, shuffle=True, num_workers=4)
 

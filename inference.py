@@ -1,3 +1,4 @@
+from posixpath import join
 import sys
 sys.path.append("./models/")
 import torch
@@ -9,6 +10,8 @@ from models.RegressFlow import RegressFlow, RegressFlow3D
 from datasets.mscoco import MSCOCO
 from datasets.aistpose2d import AISTPose2D
 from datasets.h36m import H36m
+from datasets.mirror import MirrorDataset
+from datasets.mixed_dataset import MixedDataset
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -251,26 +254,74 @@ def inference(img_path):
     else:
         draw_joints(origin_img, coords, bbox)
 
-
+import cv2
 import copy
 import scipy
-from utils import draw_3Dimg
+from utils import draw_3Dimg, draw_origin_joints_index, cam2pixel, torch_to_im
 
-def read_dataset():
+def read_dataset(index=1234):
     dataset = H36m(root=cfg.DATASET.TRAIN.ROOT, ann_file=cfg.DATASET.TRAIN.ANN, images_dir=cfg.DATASET.TRAIN.IMG_PREFIX, cfg=cfg, train=True)
-    dataset.__getitem__(12345)
-    '''
-    img_path = dataset._items[12345]
-    img_id = int(dataset._labels[12345]['img_id'])
-    label = copy.deepcopy(dataset._labels[12345])
+    dataset.__getitem__(index)
+    
+    img_path = dataset._items[index]
+    img_id = int(dataset._labels[index]['img_id'])
+    label = copy.deepcopy(dataset._labels[index])
     joints_img = label['joint_img']
     joints_cam = label['joint_cam']
     img = scipy.misc.imread(img_path, mode='RGB')
-    draw_origin_joints(img, joints_img[:,:2])
-    print(img.shape)
+    #draw_origin_joints(img, joints_img[:,:2])
+    #print(img.shape)
     #draw_3Dimg(joints_img, img, output="res3d.png")
-    '''
+    bbox = label["bbox"]
+
+    print(joints_img.shape)
+
+    for i in range(joints_img.shape[0]):
+        save_img = "k3d_%d.png" % i
+        draw_origin_joints_index(img, joints_img, i, bbox=bbox, output=save_img)
+    
+
+def read_mirrored():
+    dataset = MirrorDataset("/home/xyh/dataset/mirrored-human-base", cfg=cfg)
+    _i, _t, _, _b = dataset.__getitem__(501)
+    item = dataset._items[501]
+    print(item["joint_vis"])
+    img_path = item['img_path']
+    print(img_path)
+    img = scipy.misc.imread(img_path, mode='RGB')
+    #keypoints2d = item['keypoints2d']
+    keypoints3d = item['joint_cam']
+    K = item['cameraK']
+    f = [K[0,0],K[1,1]]
+    c = [K[0,2],K[1,2]]
+    bbox = item['bbox']
+
+    coord = cam2pixel(keypoints3d, f, c)
+    
+    #print(coord)
+
+    #draw_origin_joints(img, keypoints2d, output="keypoint2d.png")
+    #draw_origin_joints(img, coord, output="cam2pixel.png")
+
+    print(coord.shape)
+
+    for i in range(coord.shape[0]):
+        save_img = "k3d_%d.png" % i
+        draw_origin_joints_index(img, coord, index=i, bbox=bbox, output=save_img)
+
+
+def read_mixed():
+    dataset = MixedDataset(cfg=cfg)
+    print(len(dataset))
+    for idx in range(100, 150):
+        save_img = "mixed_%d.png" % idx
+        img, target, _, bbox = dataset.__getitem__(idx)
+        #img = torch_to_im(img)
+        #cv2.imwrite(save_img, img)
+        
 
 if __name__ == '__main__':
     #inference("./temp/0521.png")
-    read_dataset()
+    #read_dataset()
+    #read_mirrored()
+    read_mixed()

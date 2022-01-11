@@ -380,3 +380,37 @@ def draw_3Dimg(pos, image, output=None, display=None, kpt2D=None):
         cv2.imwrite(output, image)
 
     return image
+
+
+def draw_origin_joints(origin_img, coords, output="res.png"):
+    fig = plt.figure()
+    ax = fig.add_subplot()
+    ax.imshow(origin_img)
+    ax.scatter(coords[:,0], coords[:,1])
+    fig.savefig(output)
+    plt.close()
+
+def draw_origin_joints_index(origin_img, coords, index, bbox, output="res.png"):
+    fig = plt.figure()
+    ax = fig.add_subplot()
+    ax.imshow(origin_img)
+
+    xmin, ymin, xmax, ymax = bbox
+    if bbox is not None:
+        plt.gca().add_patch(plt.Rectangle(xy=(xmin, ymin),
+                                  width=xmax - xmin, 
+                                  height=ymax - ymin,
+                                  edgecolor='b',
+                                  fill=False, linewidth=2))
+
+    ax.scatter(coords[index,0], coords[index,1])
+    fig.savefig(output)
+    plt.close()
+
+
+def darw_Rectangle(plt, xmin, ymin, xmax, ymax):
+    plt.gca().add_patch(plt.Rectangle(xy=(xmin, ymin),
+                                  width=xmax - xmin, 
+                                  height=ymax - ymin,
+                                  edgecolor='b',
+                                  fill=False, linewidth=2))

@@ -9,3 +9,9 @@ nohup.out
 *.jpg
 *.jpeg
 *.pyc
+
+
+tags
+GPATH
+GRTAGS
+GTAGS

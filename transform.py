@@ -711,15 +711,17 @@ class SimpleTransform3D(object):
         for i in range(self.num_joints):
             if joints[i, 0, 1] > 0.0:
                 joints[i, 0:2, 0] = affine_transform(joints[i, 0:2, 0], trans)
-        '''
+        ''''
         from matplotlib import pyplot as plt
         fig = plt.figure()
         ax = fig.add_subplot()
         ax.imshow(img)
-        ax.scatter(joints[:,0,0], joints[:,1,0])
-        fig.savefig("./res3d.png")
+        ax.scatter(joints[np.where(joints_vis == 1),0,0], joints[np.where(joints_vis == 1),1,0])
+        save_img = "mixed_%s.png" % str(label["img_id"])
+        fig.savefig(save_img)
         plt.close()
         '''
+        #print(joints[:,:,0])
 
         # generate training targets
         if self._loss_type == 'heatmap':
