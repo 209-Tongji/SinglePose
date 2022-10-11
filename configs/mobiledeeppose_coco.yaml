@@ -43,7 +43,7 @@ LOSS:
 
 TRAIN:
   BEGIN_EPOCH: 0
-  END_EPOCH: 100
+  END_EPOCH: 200
   BATCH_SIZE: 64
   OPTIMIZER: 'adam'
   LR: 0.0005
@@ -53,6 +53,6 @@ TRAIN:
   - 200
 
 WORK:
-  LOG: "./logs/mobiledeeppose_coco.log"
-  BEST_MODEL: './pretrained/mobiledeeppose_coco_best.pth'
-  FINAL_MODEL: './pretrained/mobiledeeppose_coco_final.pth'
+  LOG: "./logs/mobiledeeppose_coco_0926.log"
+  BEST_MODEL: './pretrained/mobiledeeppose_coco_best_0926.pth'
+  FINAL_MODEL: './pretrained/mobiledeeppose_coco_final_0926.pth'

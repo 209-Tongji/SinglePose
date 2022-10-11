@@ -1,7 +1,7 @@
 MODEL:
   TYPE: 'DeepPose'
-  PRETRAINED: ''
-    BACKBONE:
+  PRETRAINED: './pretrained/resdeeppose_coco_final.pth'
+  BACKBONE:
     TYPE: 'ResNet'
     NUM_LAYERS: 50
 
@@ -43,11 +43,11 @@ LOSS:
   HEATMAP2COORD: 'coord'
 
 TRAIN:
-  BEGIN_EPOCH: 0
-  END_EPOCH: 100
+  BEGIN_EPOCH: 100
+  END_EPOCH: 200
   BATCH_SIZE: 64
   OPTIMIZER: 'adam'
-  LR: 0.0005
+  LR: 0.00005
   LR_FACTOR: 0.1
   LR_STEP:
   - 170

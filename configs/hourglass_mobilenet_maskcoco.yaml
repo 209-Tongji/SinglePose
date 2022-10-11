@@ -1,10 +1,13 @@
 MODEL:
-  TYPE: 'CPM'
+  TYPE: 'Hourglass'
   PRETRAINED: ''
+  BACKBONE:
+    TYPE: 'MobileNet'
+
 
 DATASET:
   TRAIN:
-    TYPE: 'COCO'
+    TYPE: 'MaskCOCO'
     ROOT: '/home/xyh/dataset/coco/'
     IMG_PREFIX: 'images'
     ANN: 'annotations/person_keypoints_train2017.json'
@@ -15,7 +18,7 @@ DATASET:
       NUM_JOINTS_HALF_BODY: 3
       PROB_HALF_BODY: 0.3
   VAL:
-    TYPE: 'COCO'
+    TYPE: 'MaskCOCO'
     ROOT: '/home/xyh/dataset/coco/'
     IMG_PREFIX: 'images'
     ANN: 'annotations/person_keypoints_val2017.json'
@@ -26,31 +29,31 @@ DATA_PRESET:
   SIGMA: 2
   NUM_JOINTS: 17
   IMAGE_SIZE:
-  - 224
-  - 224
+  - 256
+  - 192
   HEATMAP_SIZE:
-  - 27
-  - 27
+  - 64
+  - 48
   NEED_HEATMAP: true
   NEED_COORD: false
-  NEED_CENTERMAP: true
+  NEED_CENTERMAP: false
 
 LOSS:
   TYPE: 'MSELoss'
-  HEATMAP2COORD: 'cpm'
+  HEATMAP2COORD: 'heatmap'
 
 TRAIN:
   BEGIN_EPOCH: 0
-  END_EPOCH: 200
-  BATCH_SIZE: 32
+  END_EPOCH: 100
+  BATCH_SIZE: 64
   OPTIMIZER: 'adam'
-  LR: 0.0005
+  LR: 0.001
   LR_FACTOR: 0.1
   LR_STEP:
   - 170
   - 200
 
 WORK:
-  LOG: "./logs/cpm_coco.log"
-  BEST_MODEL: './pretrained/cpm_coco_best.pth'
-  FINAL_MODEL: './pretrained/cpm_coco_final.pth'
+  LOG: "./logs/hourglass_mobilenet_maskcoco2.log"
+  BEST_MODEL: './pretrained/hourglass_mobilenet_maskcoco_best2.pth'
+  FINAL_MODEL: './pretrained/hourglass_mobilenet_maskcoco_final2.pth'

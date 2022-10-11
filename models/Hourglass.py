@@ -2,6 +2,8 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 
+from MobileNet import MobileNetV2
+
 def conv3x3(in_planes, out_planes, stride=1, groups=1, dilation=1):
     """3x3 convolution with padding"""
     return nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=stride,
@@ -188,6 +190,13 @@ class Hourglass(nn.Module):
         
             import torchvision.models as tm
             x = eval(f"tm.resnet{self.num_layers}(pretrained=True)")
+
+        elif cfg.MODEL.BACKBONE.TYPE == 'MobileNet':
+            self.preact = MobileNetV2()
+            import torchvision.models as tm  # noqa: F401,F403
+            x = eval(f"tm.mobilenet_v2(pretrained=True)")
+
+            self.feature_channel = 1280
         
         model_state = self.preact.state_dict()
         state = {k: v for k, v in x.state_dict().items()
@@ -195,7 +204,7 @@ class Hourglass(nn.Module):
         model_state.update(state)
         self.preact.load_state_dict(model_state)
 
-        self.inplanes = 2048
+        self.inplanes = self.feature_channel
 
         # used for deconv layers
         self.deconv_with_bias = False
@@ -294,7 +303,7 @@ if __name__ == '__main__':
     flops, params = clever_format([flops, params], "%.3f")
     print(flops, params)
 
-    stat(model, (3, 256, 192))
+    stat(model, (3, 256,  192))
 
     '''
     print(model)

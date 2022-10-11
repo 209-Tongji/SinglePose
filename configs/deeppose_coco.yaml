@@ -1,6 +1,9 @@
 MODEL:
   TYPE: 'DeepPose'
   PRETRAINED: ''
+  BACKBONE:
+    TYPE: 'ResNet'
+    NUM_LAYERS: 50
 
 DATASET:
   TRAIN:

@@ -1,6 +1,9 @@
 MODEL:
-  TYPE: 'CPM'
-  PRETRAINED: ''
+  TYPE: 'Hourglass'
+  PRETRAINED: './pretrained/hourglass_mobilenet_coco_best.pth'
+  BACKBONE:
+    TYPE: 'MobileNet'
+
 
 DATASET:
   TRAIN:
@@ -26,31 +29,31 @@ DATA_PRESET:
   SIGMA: 2
   NUM_JOINTS: 17
   IMAGE_SIZE:
-  - 224
-  - 224
+  - 256
+  - 192
   HEATMAP_SIZE:
-  - 27
-  - 27
+  - 64
+  - 48
   NEED_HEATMAP: true
   NEED_COORD: false
-  NEED_CENTERMAP: true
+  NEED_CENTERMAP: false
 
 LOSS:
   TYPE: 'MSELoss'
-  HEATMAP2COORD: 'cpm'
+  HEATMAP2COORD: 'heatmap'
 
 TRAIN:
-  BEGIN_EPOCH: 0
-  END_EPOCH: 200
-  BATCH_SIZE: 32
+  BEGIN_EPOCH: 200
+  END_EPOCH: 300
+  BATCH_SIZE: 64
   OPTIMIZER: 'adam'
-  LR: 0.0005
+  LR: 0.00001
   LR_FACTOR: 0.1
   LR_STEP:
   - 170
   - 200
 
 WORK:
-  LOG: "./logs/cpm_coco.log"
-  BEST_MODEL: './pretrained/cpm_coco_best.pth'
-  FINAL_MODEL: './pretrained/cpm_coco_final.pth'
+  LOG: "./logs/hourglass_mobilenet_coco.log"
+  BEST_MODEL: './pretrained/hourglass_mobilenet_coco_best.pth'
+  FINAL_MODEL: './pretrained/hourglass_mobilenet_coco_final.pth'

@@ -1,3 +1,4 @@
+import torch
 from torch import nn
 
 def _make_divisible(v, divisor, min_value=None):
@@ -158,3 +159,6 @@ class MobileNetV2(nn.Module):
 if __name__ == '__main__':
     model = MobileNetV2()
     print(model)
+    img = torch.randn(1, 3, 256, 192)
+    out = model(img)
+    print(out.shape)

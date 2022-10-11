@@ -524,3 +524,57 @@ class RegressFlow3D(nn.Module):
             nf_loss=nf_loss
         )
         return output
+
+
+from easydict import EasyDict 
+cfg = EasyDict(
+    MODEL=EasyDict(
+        TYPE="Hourglass",
+        BACKBONE=EasyDict(
+            TYPE="MobileNet"
+        ),
+        NUM_FC_FILTERS=[-1],
+        HIDDEN_LIST=-1,
+    ),
+    DATASET=EasyDict(
+        TRAIN=EasyDict(
+            TYPE='COCO',
+            ROOT='/home/xyh/dataset/coco/',
+            IMG_PREFIX='images',
+            ANN='annotations/person_keypoints_train2017.json',
+            AUG=EasyDict(
+                FLIP=True,
+                ROT_FACTOR=45,
+                SCALE_FACTOR=0.25,
+                NUM_JOINTS_HALF_BODY=3,
+                PROB_HALF_BODY=0.3
+            )
+        ),
+        VAL=EasyDict(
+            TYPE='COCO',
+            ROOT='/home/xyh/dataset/coco/',
+            IMG_PREFIX='images',
+            ANN='annotations/person_keypoints_val2017.json'
+        )
+    ),
+    DATA_PRESET=EasyDict(
+        TYPE='simple',
+        SIGMA=2,
+        NUM_JOINTS=17,
+        IMAGE_SIZE=[256,192],
+        HEATMAP_SIZE=[64,48],
+        NEED_HEATMAP=True,
+        NEED_COORD=True,
+        NEED_CENTERMAP=False,
+    )
+
+)
+
+from ptflops import get_model_complexity_info
+
+if __name__ == '__main__':
+    model = RegressFlow(cfg=cfg)
+
+    flops, params = get_model_complexity_info(model, (3,256,192), as_strings=True, print_per_layer_stat=True)  #(3,512,512)输入图片的尺寸
+    print("Flops: {}".format(flops))
+    print("Params: " + params)
