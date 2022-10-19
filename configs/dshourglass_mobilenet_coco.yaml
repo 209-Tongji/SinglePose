@@ -1,6 +1,6 @@
 MODEL:
   TYPE: 'DSHourglass'
-  PRETRAINED: ''
+  PRETRAINED: './pretrained/dshourglass_mobilenet_coco_best3.pth'
   BACKBONE:
     TYPE: 'MobileNet'
 
@@ -53,7 +53,10 @@ TRAIN:
   - 170
   - 200
 
+TEST:
+  HEATMAP2COORD: 'heatmap'
+  
 WORK:
-  LOG: "./logs/dshourglass_mobilenet_coco2.log"
-  BEST_MODEL: './pretrained/dshourglass_mobilenet_coco_best2.pth'
-  FINAL_MODEL: './pretrained/dshourglass_mobilenet_coco_final2.pth'
+  LOG: "./logs/dshourglass_mobilenet_coco3.log"
+  BEST_MODEL: './pretrained/dshourglass_mobilenet_coco_best3.pth'
+  FINAL_MODEL: './pretrained/dshourglass_mobilenet_coco_final3.pth'

@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
+import math
 
 def to_numpy(tensor):
     # torch.Tensor => numpy.ndarray
@@ -414,3 +415,297 @@ def darw_Rectangle(plt, xmin, ymin, xmax, ymax):
                                   height=ymax - ymin,
                                   edgecolor='b',
                                   fill=False, linewidth=2))
+
+from transform import get_affine_transform, affine_transform
+
+def get_max_preds(batch_heatmaps):
+    '''
+    get predictions from score maps
+    heatmaps: numpy.ndarray([batch_size, num_joints, height, width])
+    '''
+    assert isinstance(batch_heatmaps, np.ndarray), \
+        'batch_heatmaps should be numpy.ndarray'
+    assert batch_heatmaps.ndim == 4, 'batch_images should be 4-ndim'
+
+    batch_size = batch_heatmaps.shape[0]
+    num_joints = batch_heatmaps.shape[1]
+    width = batch_heatmaps.shape[3]
+    heatmaps_reshaped = batch_heatmaps.reshape((batch_size, num_joints, -1))
+    idx = np.argmax(heatmaps_reshaped, 2)
+    maxvals = np.amax(heatmaps_reshaped, 2)
+
+    maxvals = maxvals.reshape((batch_size, num_joints, 1))
+    idx = idx.reshape((batch_size, num_joints, 1))
+
+    preds = np.tile(idx, (1, 1, 2)).astype(np.float32)
+
+    preds[:, :, 0] = (preds[:, :, 0]) % width
+    preds[:, :, 1] = np.floor((preds[:, :, 1]) / width)
+
+    pred_mask = np.tile(np.greater(maxvals, 0.0), (1, 1, 2))
+    pred_mask = pred_mask.astype(np.float32)
+
+    preds *= pred_mask
+    return preds, maxvals
+
+
+def get_final_preds(config, batch_heatmaps, center, scale):
+    coords, maxvals = get_max_preds(batch_heatmaps)
+
+    heatmap_height = batch_heatmaps.shape[2]
+    heatmap_width = batch_heatmaps.shape[3]
+
+    # post-processing
+    if config.TEST.POST_PROCESS:
+        for n in range(coords.shape[0]):
+            for p in range(coords.shape[1]):
+                hm = batch_heatmaps[n][p]
+                px = int(math.floor(coords[n][p][0] + 0.5))
+                py = int(math.floor(coords[n][p][1] + 0.5))
+                if 1 < px < heatmap_width-1 and 1 < py < heatmap_height-1:
+                    diff = np.array(
+                        [
+                            hm[py][px+1] - hm[py][px-1],
+                            hm[py+1][px] - hm[py-1][px]
+                        ]
+                    )
+                    coords[n][p] += np.sign(diff) * .25
+
+    preds = coords.copy()
+
+    # Transform back
+    for i in range(coords.shape[0]):
+        preds[i] = transform_preds(
+            coords[i], center[i], scale[i], [heatmap_width, heatmap_height]
+        )
+
+    return preds, maxvals
+
+def transform_preds(coords, center, scale, output_size):
+    target_coords = np.zeros(coords.shape)
+    trans = get_affine_transform(center, scale, 0, output_size, inv=1)
+    for p in range(coords.shape[0]):
+        target_coords[p, 0:2] = affine_transform(coords[p, 0:2], trans)
+    return target_coords
+
+def oks_iou(g, d, a_g, a_d, sigmas=None, in_vis_thre=None):
+    if not isinstance(sigmas, np.ndarray):
+        sigmas = np.array([.26, .25, .25, .35, .35, .79, .79, .72, .72, .62, .62, 1.07, 1.07, .87, .87, .89, .89]) / 10.0
+    vars = (sigmas * 2) ** 2
+    xg = g[0::3]
+    yg = g[1::3]
+    vg = g[2::3]
+    ious = np.zeros((d.shape[0]))
+    for n_d in range(0, d.shape[0]):
+        xd = d[n_d, 0::3]
+        yd = d[n_d, 1::3]
+        vd = d[n_d, 2::3]
+        dx = xd - xg
+        dy = yd - yg
+        e = (dx ** 2 + dy ** 2) / vars / ((a_g + a_d[n_d]) / 2 + np.spacing(1)) / 2
+        if in_vis_thre is not None:
+            ind = list(vg > in_vis_thre) and list(vd > in_vis_thre)
+            e = e[ind]
+        ious[n_d] = np.sum(np.exp(-e)) / e.shape[0] if e.shape[0] != 0 else 0.0
+    return ious
+
+def oks_nms(kpts_db, thresh, sigmas=None, in_vis_thre=None):
+    """
+    greedily select boxes with high confidence and overlap with current maximum <= thresh
+    rule out overlap >= thresh, overlap = oks
+    :param kpts_db
+    :param thresh: retain overlap < thresh
+    :return: indexes to keep
+    """
+    if len(kpts_db) == 0:
+        return []
+
+    scores = np.array([kpts_db[i]['score'] for i in range(len(kpts_db))])
+    kpts = np.array([kpts_db[i]['keypoints'].flatten() for i in range(len(kpts_db))])
+    areas = np.array([kpts_db[i]['area'] for i in range(len(kpts_db))])
+
+    order = scores.argsort()[::-1]
+
+    keep = []
+    while order.size > 0:
+        i = order[0]
+        keep.append(i)
+
+        oks_ovr = oks_iou(kpts[i], kpts[order[1:]], areas[i], areas[order[1:]], sigmas, in_vis_thre)
+
+        inds = np.where(oks_ovr <= thresh)[0]
+        order = order[inds + 1]
+
+    return keep
+
+def rescore(overlap, scores, thresh, type='gaussian'):
+    assert overlap.shape[0] == scores.shape[0]
+    if type == 'linear':
+        inds = np.where(overlap >= thresh)[0]
+        scores[inds] = scores[inds] * (1 - overlap[inds])
+    else:
+        scores = scores * np.exp(- overlap**2 / thresh)
+
+    return scores
+
+def soft_oks_nms(kpts_db, thresh, sigmas=None, in_vis_thre=None):
+    """
+    greedily select boxes with high confidence and overlap with current maximum <= thresh
+    rule out overlap >= thresh, overlap = oks
+    :param kpts_db
+    :param thresh: retain overlap < thresh
+    :return: indexes to keep
+    """
+    if len(kpts_db) == 0:
+        return []
+
+    scores = np.array([kpts_db[i]['score'] for i in range(len(kpts_db))])
+    kpts = np.array([kpts_db[i]['keypoints'].flatten() for i in range(len(kpts_db))])
+    areas = np.array([kpts_db[i]['area'] for i in range(len(kpts_db))])
+
+    order = scores.argsort()[::-1]
+    scores = scores[order]
+
+    # max_dets = order.size
+    max_dets = 20
+    keep = np.zeros(max_dets, dtype=np.intp)
+    keep_cnt = 0
+    while order.size > 0 and keep_cnt < max_dets:
+        i = order[0]
+
+        oks_ovr = oks_iou(kpts[i], kpts[order[1:]], areas[i], areas[order[1:]], sigmas, in_vis_thre)
+
+        order = order[1:]
+        scores = rescore(oks_ovr, scores[1:], thresh)
+
+        tmp = scores.argsort()[::-1]
+        order = order[tmp]
+        scores = scores[tmp]
+
+        keep[keep_cnt] = i
+        keep_cnt += 1
+
+    keep = keep[:keep_cnt]
+
+    return keep
+    # kpts_db = kpts_db[:keep_cnt]
+
+    # return kpts_db
+
+def get_max_pred(heatmaps):
+    num_joints = heatmaps.shape[0]
+    width = heatmaps.shape[2]
+    heatmaps_reshaped = heatmaps.reshape((num_joints, -1))
+    idx = np.argmax(heatmaps_reshaped, 1)
+    maxvals = np.max(heatmaps_reshaped, 1)
+
+    maxvals = maxvals.reshape((num_joints, 1))
+    idx = idx.reshape((num_joints, 1))
+
+    preds = np.tile(idx, (1, 2)).astype(np.float32)
+
+    preds[:, 0] = (preds[:, 0]) % width
+    preds[:, 1] = np.floor((preds[:, 1]) / width)
+
+    pred_mask = np.tile(np.greater(maxvals, 0.0), (1, 2))
+    pred_mask = pred_mask.astype(np.float32)
+
+    preds *= pred_mask
+    return preds, maxvals
+
+def transform_pred(coords, center, scale, output_size):
+    target_coords = np.zeros(coords.shape)
+    trans = get_affine_transform(center, scale, 0, output_size, inv=1)
+    target_coords[0:2] = affine_transform(coords[0:2], trans)
+    return target_coords
+
+def heatmap_to_coord_simple(hms, bbox, **kwargs):
+    if not isinstance(hms, np.ndarray):
+        hms = hms.cpu().data.numpy()
+    coords, maxvals = get_max_pred(hms)
+    #print(coords.shape)
+
+    hm_h = hms.shape[1]
+    hm_w = hms.shape[2]
+
+    # post-processing
+    for p in range(coords.shape[0]):
+        hm = hms[p]
+        px = int(round(float(coords[p][0])))
+        py = int(round(float(coords[p][1])))
+        if 1 < px < hm_w - 1 and 1 < py < hm_h - 1:
+            diff = np.array((hm[py][px + 1] - hm[py][px - 1],
+                             hm[py + 1][px] - hm[py - 1][px]))
+            coords[p] += np.sign(diff) * .25
+
+    preds = np.zeros_like(coords)
+
+    # transform bbox to scale
+    xmin, ymin, xmax, ymax = bbox
+    w = xmax - xmin
+    h = ymax - ymin
+    center = np.array([xmin + w * 0.5, ymin + h * 0.5])
+    scale = np.array([w, h])
+    # Transform back
+    for i in range(coords.shape[0]):
+        preds[i] = transform_pred(coords[i], center, scale,
+                                   [hm_w, hm_h])
+
+    return preds[None, :, :], maxvals[None, :, :]
+
+def heatmap_to_coord(pred_jts, pred_scores, hm_shape, bbox, output_3d=False):
+    hm_height, hm_width = hm_shape
+    hm_height = hm_height * 4
+    hm_width = hm_width * 4
+
+    ndims = pred_jts.dim()
+    assert ndims in [2, 3], "Dimensions of input heatmap should be 2 or 3"
+    if ndims == 2:
+        pred_jts = pred_jts.unsqueeze(0)
+        pred_scores = pred_scores.unsqueeze(0)
+
+    coords = pred_jts.cpu().numpy()
+    coords = coords.astype(float)
+    pred_scores = pred_scores.cpu().numpy()
+    pred_scores = pred_scores.astype(float)
+
+    coords[:, :, 0] = (coords[:, :, 0] + 0.5) * hm_width
+    coords[:, :, 1] = (coords[:, :, 1] + 0.5) * hm_height
+
+    preds = np.zeros_like(coords)
+    # transform bbox to scale
+    xmin, ymin, xmax, ymax = bbox
+    w = xmax - xmin
+    h = ymax - ymin
+    center = np.array([xmin + w * 0.5, ymin + h * 0.5])
+    scale = np.array([w, h])
+    # Transform back
+    for i in range(coords.shape[0]):
+        for j in range(coords.shape[1]):
+            preds[i, j, 0:2] = transform_preds(coords[i, j, 0:2], center, scale,
+                                               [hm_width, hm_height])
+            if output_3d:
+                preds[i, j, 2] = coords[i, j, 2]
+
+    return preds, 
+
+class get_coord(object):
+    def __init__(self, cfg, norm_size, output_3d=False):
+        self.type = cfg.TEST.get('HEATMAP2COORD')
+        self.input_size = cfg.DATA_PRESET.IMAGE_SIZE
+        self.norm_size = norm_size
+        self.output_3d = output_3d
+
+    def __call__(self, output, bbox, idx):
+        if self.type == 'coord':
+            pred_jts = output.pred_jts[idx]
+            pred_scores = output.maxvals[idx]
+            return heatmap_to_coord(pred_jts, pred_scores, self.norm_size, bbox, self.output_3d)
+        elif self.type == 'heatmap':
+            # pred_hms = output.heatmap[idx]
+            #print(output.shape)
+            pred_hms = output[idx]
+            #print(pred_hms.shape)
+            return heatmap_to_coord_simple(pred_hms, bbox)
+        else:
+            raise NotImplementedError

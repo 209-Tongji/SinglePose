@@ -1,13 +1,10 @@
 MODEL:
-  TYPE: 'Hourglass'
-  PRETRAINED: './pretrained/hourglass_mobilenet_coco_best.pth'
-  BACKBONE:
-    TYPE: 'MobileNet'
-
+  TYPE: 'DSPose'
+  PRETRAINED: ''
 
 DATASET:
   TRAIN:
-    TYPE: 'COCO'
+    TYPE: 'MaskCOCO'
     ROOT: '/home/xyh/dataset/coco/'
     IMG_PREFIX: 'images'
     ANN: 'annotations/person_keypoints_train2017.json'
@@ -18,7 +15,7 @@ DATASET:
       NUM_JOINTS_HALF_BODY: 3
       PROB_HALF_BODY: 0.3
   VAL:
-    TYPE: 'COCO'
+    TYPE: 'MaskCOCO'
     ROOT: '/home/xyh/dataset/coco/'
     IMG_PREFIX: 'images'
     ANN: 'annotations/person_keypoints_val2017.json'
@@ -43,20 +40,17 @@ LOSS:
   HEATMAP2COORD: 'heatmap'
 
 TRAIN:
-  BEGIN_EPOCH: 200
-  END_EPOCH: 300
+  BEGIN_EPOCH: 0
+  END_EPOCH: 100
   BATCH_SIZE: 64
   OPTIMIZER: 'adam'
-  LR: 0.00001
+  LR: 0.0005
   LR_FACTOR: 0.1
   LR_STEP:
   - 170
   - 200
 
-TEST:
-  HEATMAP2COORD: 'heatmap'
-
 WORK:
-  LOG: "./logs/hourglass_mobilenet_coco.log"
-  BEST_MODEL: './pretrained/hourglass_mobilenet_coco_best.pth'
-  FINAL_MODEL: './pretrained/hourglass_mobilenet_coco_final.pth'
+  LOG: "./logs/dspose_mobilenet_maskcoco.log"
+  BEST_MODEL: './pretrained/dspose_mobilenet_maskcoco_best.pth'
+  FINAL_MODEL: './pretrained/dspose_mobilenet_maskcoco_final.pth'

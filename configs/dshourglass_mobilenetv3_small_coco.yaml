@@ -1,8 +1,8 @@
 MODEL:
-  TYPE: 'Hourglass'
-  PRETRAINED: './pretrained/hourglass_mobilenet_coco_best.pth'
+  TYPE: 'DSHourglass'
+  PRETRAINED: './pretrained/dshourglass_mobilenetv3_small_coco_best.pth'
   BACKBONE:
-    TYPE: 'MobileNet'
+    TYPE: 'MobileNetV3_Small'
 
 
 DATASET:
@@ -43,11 +43,11 @@ LOSS:
   HEATMAP2COORD: 'heatmap'
 
 TRAIN:
-  BEGIN_EPOCH: 200
-  END_EPOCH: 300
+  BEGIN_EPOCH: 100
+  END_EPOCH: 200
   BATCH_SIZE: 64
   OPTIMIZER: 'adam'
-  LR: 0.00001
+  LR: 0.0001
   LR_FACTOR: 0.1
   LR_STEP:
   - 170
@@ -57,6 +57,6 @@ TEST:
   HEATMAP2COORD: 'heatmap'
 
 WORK:
-  LOG: "./logs/hourglass_mobilenet_coco.log"
-  BEST_MODEL: './pretrained/hourglass_mobilenet_coco_best.pth'
-  FINAL_MODEL: './pretrained/hourglass_mobilenet_coco_final.pth'
+  LOG: "./logs/dshourglass_mobilenetv3_small_coco.log"
+  BEST_MODEL: './pretrained/dshourglass_mobilenetv3_small_coco_best.pth'
+  FINAL_MODEL: './pretrained/dshourglass_mobilenetv3_small_coco_final.pth'

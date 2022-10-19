@@ -358,7 +358,9 @@ class SimpleTransform(object):
             'target_uv_weight': torch.from_numpy(target_uv_weight).float() if self._need_coord else torch.tensor([]),
             'bbox': torch.Tensor(bbox),
             'joint_3d': joints,
-            'center_map': torch.from_numpy(centermap).float() if self._need_centermap else torch.tensor([])
+            'center_map': torch.from_numpy(centermap).float() if self._need_centermap else torch.tensor([]),
+            'center': center,
+            'scale': scale
         }
 
         return output
@@ -803,3 +805,149 @@ class SimpleTransform3D(object):
         scale = scale * 1.5
 
         return center, scale
+
+
+class SimpleTransformMask(SimpleTransform):
+    """Generation of cropped input person and pose heatmaps from SimplePose.
+
+    Parameters
+    ----------
+    img: torch.Tensor
+        A tensor with shape: `(3, h, w)`.
+    label: dict
+        A dictionary with 4 keys:
+            `bbox`: [xmin, ymin, xmax, ymax]
+            `joints_3d`: numpy.ndarray with shape: (n_joints, 2),
+                    including position and visible flag
+            `width`: image width
+            `height`: image height
+    dataset:
+        The dataset to be transformed, must include `joint_pairs` property for flipping.
+    scale_factor: int
+        Scale augmentation.
+    input_size: tuple
+        Input image size, as (height, width).
+    output_size: tuple
+        Heatmap size, as (height, width).
+    rot: int
+        Ratation augmentation.
+    train: bool
+        True for training trasformation.
+    """
+
+    def __init__(self, dataset, scale_factor,
+                 input_size, output_size, rot, sigma,
+                 train, need_heatmap, need_coord, need_centermap):
+        super().__init__(dataset, scale_factor,
+                 input_size, output_size, rot, sigma,
+                 train, need_heatmap, need_coord, need_centermap)
+
+    def __call__(self, src, label, mask):
+        bbox = list(label['bbox'])
+        gt_joints = label['joints_3d']
+        mask = np.stack((mask, mask, mask), axis=2)
+
+        imgwidth, imght = label['width'], label['height']
+        assert imgwidth == src.shape[1] and imght == src.shape[0]
+        self.num_joints = gt_joints.shape[0]
+
+        joints_vis = np.zeros((self.num_joints, 1), dtype=np.float32)
+        joints_vis[:, 0] = gt_joints[:, 0, 1]
+
+        input_size = self._input_size
+
+        xmin, ymin, xmax, ymax = bbox
+        center, scale = _box_to_center_scale(
+            xmin, ymin, xmax - xmin, ymax - ymin, self._aspect_ratio)
+
+        # half body transform
+        if self._train and (np.sum(joints_vis[:, 0]) > self.num_joints_half_body and np.random.rand() < self.prob_half_body):
+            c_half_body, s_half_body = self.half_body_transform(
+                gt_joints[:, :, 0], joints_vis
+            )
+
+            if c_half_body is not None and s_half_body is not None:
+                center, scale = c_half_body, s_half_body
+
+        # rescale
+        if self._train:
+            sf = self._scale_factor
+            scale = scale * random.uniform(1 - sf, 1 + sf)
+        else:
+            scale = scale * 1.0
+
+        # rotation
+        if self._train:
+            rf = self._rot
+            r = random.uniform(-rf, rf) if random.random() <= 0.5 else 0
+        else:
+            r = 0
+
+        joints = gt_joints
+        if random.random() > 0.5 and self._train:
+            # src, fliped = random_flip_image(src, px=0.5, py=0)
+            # if fliped[0]:
+            assert src.shape[2] == 3
+            src = src[:, ::-1, :]
+            mask = mask[:, ::-1, :]
+
+            joints = flip_joints_3d(joints, imgwidth, self._joint_pairs)
+            center[0] = imgwidth - center[0] - 1
+
+        inp_h, inp_w = input_size
+        trans = get_affine_transform(center, scale, r, [inp_w, inp_h])
+
+        img = cv2.warpAffine(src, trans, (int(inp_w), int(inp_h)), flags=cv2.INTER_LINEAR)
+        mask = cv2.warpAffine(mask, trans, (int(inp_w), int(inp_h)), flags=cv2.INTER_LINEAR)
+        # mask = np.expand_dims(mask, axis=2)
+        # np.set_printoptions(threshold=np.inf)
+        # print(mask)
+        # mask = np.stack((mask, mask, mask), axis=2)
+        # print(mask.shape)
+        # cv2.imwrite("mask111.jpg", mask)
+        # cv2.imwrite("mask222.jpg", img)
+
+        # deal with joints visibility
+        for i in range(self.num_joints):
+            if joints[i, 0, 1] > 0.0:
+                joints[i, 0:2, 0] = affine_transform(joints[i, 0:2, 0], trans)
+
+        # generate training targets
+        if self._need_heatmap:
+            target_hm, target_hm_weight = self._target_generator(joints.copy(), self.num_joints)
+        if self._need_coord:
+            target_uv, target_uv_weight, target_visible, target_visible_weight = self._integral_target_generator(joints.copy(), self.num_joints, inp_h, inp_w)
+
+
+        bbox = _center_scale_to_box(center, scale)
+
+        if self._need_centermap:
+            centermap = self._get_center_map()
+
+        img = im_to_torch(img)
+        img[0].add_(-0.406)
+        img[1].add_(-0.457)
+        img[2].add_(-0.480)
+        # mask = np.expand_dims(mask[:,:,0], axis=2)
+        mask = im_to_torch(mask)
+        mask = torch.unsqueeze(mask[0], dim=0)
+        # print(mask.shape)
+        img = torch.cat((img, mask), dim=0)
+        # print(img.shape)
+
+        output = {
+            'type': '2d_data',
+            'image': img,
+            'target_hm': torch.from_numpy(target_hm).float() if self._need_heatmap else torch.tensor([]),
+            'target_hm_weight': torch.from_numpy(target_hm_weight).float() if self._need_heatmap else torch.tensor([]),
+            'target_uv': torch.from_numpy(target_uv).float() if self._need_coord else torch.tensor([]),
+            'target_uv_weight': torch.from_numpy(target_uv_weight).float() if self._need_coord else torch.tensor([]),
+            'bbox': torch.Tensor(bbox),
+            'joint_3d': joints,
+            'center_map': torch.from_numpy(centermap).float() if self._need_centermap else torch.tensor([]),
+            'center': center,
+            'scale': scale
+        }
+
+        return output
+        

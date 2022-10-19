@@ -4,42 +4,115 @@ from torch import nn
 import torch.nn.functional as F
 
 from MobileNet import MobileNetV2
-from MobileNetv3 import MobileNetV3_Small, MobileNetV3_Large
+
+class ConvBNReLU(nn.Sequential):
+    def __init__(self, in_planes, out_planes, kernel_size=3, stride=1, groups=1, norm_layer=None):
+        padding = (kernel_size - 1) // 2
+        if norm_layer is None:
+            norm_layer = nn.BatchNorm2d
+        super(ConvBNReLU, self).__init__(
+            nn.Conv2d(in_planes, out_planes, kernel_size, stride, padding, groups=groups, bias=False),
+            norm_layer(out_planes),
+            nn.ReLU6(inplace=True)
+        )
+
+class DSPose(nn.Module):
+    def __init__(self, cfg):
+        super(DSPose, self).__init__()
+
+        self.num_joints=cfg.DATA_PRESET.NUM_JOINTS
+        features = [
+            # 256 x 192
+            nn.Conv2d(in_channels=3, out_channels=32, kernel_size=3, stride=2, padding=1, groups=1, bias=False),
+            nn.BatchNorm2d(32),
+            # 128 x 96
+            nn.ReLU6(inplace=True),
+            nn.Conv2d(in_channels=32, out_channels=32, kernel_size=1, stride=1, padding=0, groups=1, bias=False),
+            nn.BatchNorm2d(32),
+            nn.ReLU6(inplace=True),
+            nn.Conv2d(in_channels=32, out_channels=32, kernel_size=3, stride=2, padding=1, groups=32, bias=False),
+            nn.BatchNorm2d(32),
+            nn.ReLU6(inplace=True),
+            nn.Conv2d(in_channels=32, out_channels=16, kernel_size=1, stride=1, padding=0, groups=1, bias=False),
+            nn.BatchNorm2d(16),
+            # 64 x 48
+            nn.Conv2d(in_channels=16, out_channels=96, kernel_size=1, stride=1, padding=0, groups=1, bias=False),
+            nn.BatchNorm2d(96),
+            nn.ReLU6(inplace=True),
+            nn.Conv2d(in_channels=96, out_channels=96, kernel_size=3, stride=2, padding=1, groups=96, bias=False),
+            nn.BatchNorm2d(96),
+            nn.ReLU6(inplace=True),
+            nn.Conv2d(in_channels=96, out_channels=24, kernel_size=1, stride=1, padding=0, groups=1, bias=False),
+            nn.BatchNorm2d(24),
+            # 32 x 24
+            nn.Conv2d(in_channels=24, out_channels=144, kernel_size=1, stride=1, padding=0, groups=1, bias=False),
+            nn.BatchNorm2d(144),
+            nn.ReLU6(inplace=True),
+            nn.Conv2d(in_channels=144, out_channels=144, kernel_size=3, stride=2, padding=1, groups=144, bias=False),
+            nn.BatchNorm2d(144),
+            nn.ReLU6(inplace=True),
+            nn.Conv2d(in_channels=144, out_channels=128, kernel_size=1, stride=1, padding=0, groups=1, bias=False),
+            nn.BatchNorm2d(128),
+            # 16 x 12
+        ]
+        self.preact = nn.Sequential(*features)
+
+        deconv_layers = [
+            # 16 x 12
+            nn.ConvTranspose2d(in_channels=128, out_channels=128, kernel_size=4, stride=2, 
+                padding=1, output_padding=0, groups=128, bias=False),
+            nn.BatchNorm2d(128),
+            nn.ReLU6(inplace=True),
+            nn.Conv2d(in_channels=128, out_channels=256, kernel_size=1, stride=1, padding=0, groups=1, bias=False),
+            nn.BatchNorm2d(256),
+            nn.ReLU6(inplace=True),
+            # 32 x 24
+            nn.ConvTranspose2d(in_channels=256, out_channels=256, kernel_size=4, stride=2, 
+                padding=1, output_padding=0, groups=256, bias=False),
+            nn.BatchNorm2d(256),
+            nn.ReLU6(inplace=True),
+            nn.Conv2d(in_channels=256, out_channels=256, kernel_size=1, stride=1, padding=0, groups=1, bias=False),
+            nn.BatchNorm2d(256),
+            nn.ReLU6(inplace=True),
+            # 64 x 48
+        ]
+
+        self.deconv_layers = nn.Sequential(*deconv_layers)
+
+        self.final_layer = nn.Conv2d(
+            in_channels=256,
+            out_channels= self.num_joints,
+            kernel_size=1,
+            stride=1,
+            padding=0
+        )
+    
+    def forward(self, x):
+        x = self.preact(x)
+        x = self.deconv_layers(x)
+        x = self.final_layer(x)
+
+        return x
+
 
 # derived from https://github.com/leoxiaobin/deep-high-resolution-net.pytorch
 class DSHourglass(nn.Module):
     def __init__(self, cfg):
         super(DSHourglass, self).__init__()
         self.num_joints=cfg.DATA_PRESET.NUM_JOINTS
-        backbone_pretrained = False
 
         if cfg.MODEL.BACKBONE.TYPE == 'MobileNet':
             self.preact = MobileNetV2()
             import torchvision.models as tm  # noqa: F401,F403
-            # x = eval(f"tm.mobilenet_v2(pretrained=True)")
-            x = eval(f"tm.mobilenet_v2(pretrained=False)")
-            backbone_pretrained = True
-            self.feature_channel = 1280
-        
-        elif cfg.MODEL.BACKBONE.TYPE == 'MobileNetV3_Small':
-            self.preact = MobileNetV3_Small()
-            self.feature_channel = 512
-        
-        elif cfg.MODEL.BACKBONE.TYPE == 'MobileNetV3_Large':
-            self.preact = MobileNetV3_Large()
-            self.feature_channel = 1280
-        
-        elif cfg.MODEL.BACKBONE.TYPE == 'MobileNet_i4':
-            self.preact = MobileNetV2(img_channel=4)
-            self.feature_channel = 1280
+            x = eval(f"tm.mobilenet_v2(pretrained=True)")
 
-
-        if backbone_pretrained:
-            model_state = self.preact.state_dict()
-            state = {k: v for k, v in x.state_dict().items()
-                        if k in self.preact.state_dict() and v.size() == self.preact.state_dict()[k].size()}
-            model_state.update(state)
-            self.preact.load_state_dict(model_state)
+            self.feature_channel = 1280
+        
+        model_state = self.preact.state_dict()
+        state = {k: v for k, v in x.state_dict().items()
+                    if k in self.preact.state_dict() and v.size() == self.preact.state_dict()[k].size()}
+        model_state.update(state)
+        self.preact.load_state_dict(model_state)
 
         self.inplanes = self.feature_channel
 
@@ -123,7 +196,7 @@ cfg = EasyDict(
     MODEL=EasyDict(
         TYPE="Hourglass",
         BACKBONE=EasyDict(
-            TYPE="MobileNetV3_Small",
+            TYPE="MobileNet",
         )
     ),
     DATA_PRESET=EasyDict(
@@ -141,7 +214,7 @@ Total Flops: 328.97MFlops
 Total MemR+W: 173.24MB
 '''
 if __name__ == '__main__':
-    model = DSHourglass(cfg)
+    model = DSPose(cfg)
 
     flops, params = get_model_complexity_info(model, (3,256,192), as_strings=True, print_per_layer_stat=True)  #(3,512,512)输入图片的尺寸
     print("Flops: {}".format(flops))

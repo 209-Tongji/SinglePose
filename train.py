@@ -12,6 +12,11 @@ from models.RegressFlow import RegressFlow, RegressFlow3D
 from models.DeepPose import DeepPose
 from models.CPM import CPM
 from models.DSHourglass import DSHourglass
+from models.DSPose import DSPose
+from models.DSPosev2 import DSPosev2
+from models.DSPosev3 import DSPosev3
+from models.DSPosev4 import DSPosev4
+from models.DSPosev5 import DSPosev5
 
 from loss import MSELoss, RLELoss, RLELoss3D
 
@@ -20,6 +25,7 @@ from datasets.aistpose2d import AISTPose2D
 from datasets.h36m import H36m
 from datasets.mixed_dataset import MixedDataset
 from datasets.maskcoco import MaskCOCO
+from datasets.maskcoco2 import MaskCOCO2
 
 from metrics import DataLogger, calc_accuracy, calc_coord_accuracy, evaluate_mAP
 from config import update_config, opt
@@ -140,6 +146,16 @@ def main_worker():
         model = CPM(cfg.DATA_PRESET.NUM_JOINTS)
     elif cfg.MODEL.TYPE == 'DSHourglass':
         model = DSHourglass(cfg=cfg)
+    elif cfg.MODEL.TYPE == 'DSPose':
+        model = DSPose(cfg=cfg)
+    elif cfg.MODEL.TYPE == 'DSPosev2':
+        model = DSPosev2(cfg=cfg)
+    elif cfg.MODEL.TYPE == 'DSPosev3':
+        model = DSPosev3(cfg=cfg)
+    elif cfg.MODEL.TYPE == 'DSPosev4':
+        model = DSPosev4(cfg=cfg)
+    elif cfg.MODEL.TYPE == 'DSPosev5':
+        model = DSPosev4(cfg=cfg)
 
     else:
         print("Error : unkown model name.")
@@ -206,6 +222,15 @@ def main_worker():
             train_dataset, batch_size=cfg.TRAIN.BATCH_SIZE, shuffle=True, num_workers=4)
 
         val_dataset =  MaskCOCO(root=cfg.DATASET.VAL.ROOT, ann_file=cfg.DATASET.VAL.ANN, images_dir=cfg.DATASET.VAL.IMG_PREFIX, cfg=cfg, train=False)
+        val_loader = torch.utils.data.DataLoader(
+            val_dataset, batch_size=cfg.TRAIN.BATCH_SIZE // 2, shuffle=True, num_workers=4)
+    
+    elif cfg.DATASET.TRAIN.TYPE == 'MaskCOCO2':
+        train_dataset = MaskCOCO2(root=cfg.DATASET.TRAIN.ROOT, ann_file=cfg.DATASET.TRAIN.ANN, images_dir=cfg.DATASET.TRAIN.IMG_PREFIX, cfg=cfg, train=True)
+        train_loader = torch.utils.data.DataLoader(
+            train_dataset, batch_size=cfg.TRAIN.BATCH_SIZE, shuffle=True, num_workers=4)
+
+        val_dataset =  MaskCOCO2(root=cfg.DATASET.VAL.ROOT, ann_file=cfg.DATASET.VAL.ANN, images_dir=cfg.DATASET.VAL.IMG_PREFIX, cfg=cfg, train=False)
         val_loader = torch.utils.data.DataLoader(
             val_dataset, batch_size=cfg.TRAIN.BATCH_SIZE // 2, shuffle=True, num_workers=4)
     
