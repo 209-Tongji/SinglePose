@@ -1,0 +1,67 @@
+MODEL:
+  TYPE: 'DSHourglass'
+  PRETRAINED:
+  BACKBONE:
+    TYPE: 'MobileNet_Mask_Attention'
+    MASK_LIST: 
+    - -1
+    - 0
+    - 1
+    - 2
+
+
+DATASET:
+  TRAIN:
+    TYPE: 'MaskCOCO2'
+    ROOT: '/home/xyh/dataset/coco/'
+    IMG_PREFIX: 'images'
+    ANN: 'annotations/person_keypoints_train2017.json'
+    AUG:
+      FLIP: true
+      ROT_FACTOR: 45
+      SCALE_FACTOR: 0.25
+      NUM_JOINTS_HALF_BODY: 3
+      PROB_HALF_BODY: 0.3
+  VAL:
+    TYPE: 'MaskCOCO2'
+    ROOT: '/home/xyh/dataset/coco/'
+    IMG_PREFIX: 'images'
+    ANN: 'annotations/person_keypoints_val2017.json'
+  TEST:
+
+DATA_PRESET:
+  TYPE: 'simple'
+  SIGMA: 2
+  NUM_JOINTS: 17
+  IMAGE_SIZE:
+  - 256
+  - 192
+  HEATMAP_SIZE:
+  - 64
+  - 48
+  NEED_HEATMAP: true
+  NEED_COORD: false
+  NEED_CENTERMAP: false
+
+LOSS:
+  TYPE: 'MSELoss'
+  HEATMAP2COORD: 'heatmap'
+
+TRAIN:
+  BEGIN_EPOCH: 0
+  END_EPOCH: 300
+  BATCH_SIZE: 64
+  OPTIMIZER: 'adam'
+  LR: 0.005
+  LR_FACTOR: 0.1
+  LR_STEP:
+  - 100
+  - 200
+
+TEST:
+  HEATMAP2COORD: 'heatmap'
+
+WORK:
+  LOG: "./logs/dshourglass_mobilenetMaskAttention_coco_0012.log"
+  BEST_MODEL: './pretrained/dshourglass_mobilenetMaskAttention_coco_0012_best.pth'
+  FINAL_MODEL: './pretrained/dshourglass_mobilenetMaskAttention_coco_0012_final.pth'

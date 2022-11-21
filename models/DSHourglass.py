@@ -45,6 +45,10 @@ class DSHourglass(nn.Module):
         elif cfg.MODEL.BACKBONE.TYPE == 'MobileNet_Mask':
             self.preact = MobileNet_Mask(img_channel=4, mask_layer=cfg.MODEL.BACKBONE.MASK_LIST)
             self.feature_channel = 1280
+        
+        elif cfg.MODEL.BACKBONE.TYPE == 'MobileNet_Mask_Attention':
+            self.preact = MobileNet_Mask(img_channel=4, mask_layer=cfg.MODEL.BACKBONE.MASK_LIST)
+            self.feature_channel = 1280
 
 
         if backbone_pretrained:
