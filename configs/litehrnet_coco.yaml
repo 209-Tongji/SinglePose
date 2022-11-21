@@ -1,13 +1,10 @@
 MODEL:
-  TYPE: 'DSHourglass'
-  PRETRAINED: './pretrained/dshourglass_mobileneti4_maskcoco2_best.pth'
-  BACKBONE:
-    TYPE: 'MobileNet_i4'
-
+  TYPE: 'LiteHRNet'
+  PRETRAINED: './pretrained/litehrnet_coco_best.pth'
 
 DATASET:
   TRAIN:
-    TYPE: 'MaskCOCO2'
+    TYPE: 'COCO'
     ROOT: '/home/xyh/dataset/coco/'
     IMG_PREFIX: 'images'
     ANN: 'annotations/person_keypoints_train2017.json'
@@ -18,7 +15,7 @@ DATASET:
       NUM_JOINTS_HALF_BODY: 3
       PROB_HALF_BODY: 0.3
   VAL:
-    TYPE: 'MaskCOCO2'
+    TYPE: 'COCO'
     ROOT: '/home/xyh/dataset/coco/'
     IMG_PREFIX: 'images'
     ANN: 'annotations/person_keypoints_val2017.json'
@@ -41,13 +38,13 @@ DATA_PRESET:
 LOSS:
   TYPE: 'MSELoss'
   HEATMAP2COORD: 'heatmap'
-
+  
 TRAIN:
-  BEGIN_EPOCH: 200
-  END_EPOCH: 300
+  BEGIN_EPOCH: 100
+  END_EPOCH: 200
   BATCH_SIZE: 64
   OPTIMIZER: 'adam'
-  LR: 0.00005
+  LR: 0.0001
   LR_FACTOR: 0.1
   LR_STEP:
   - 170
@@ -57,6 +54,6 @@ TEST:
   HEATMAP2COORD: 'heatmap'
 
 WORK:
-  LOG: "./logs/dshourglass_mobileneti4_maskcoco2.log"
-  BEST_MODEL: './pretrained/dshourglass_mobileneti4_maskcoco2_best.pth'
-  FINAL_MODEL: './pretrained/dshourglass_mobileneti4_maskcoco2_final.pth'
+  LOG: "./logs/litehrnet_coco.log"
+  BEST_MODEL: './pretrained/litehrnet_coco_best.pth'
+  FINAL_MODEL: './pretrained/litehrnet_coco_final.pth'

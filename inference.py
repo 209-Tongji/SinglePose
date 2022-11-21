@@ -114,7 +114,7 @@ def make_input(img_path, bboxes, idx=0):
     origin_img = Image.open(img_path, mode='r').convert('RGB')
     img = TF.crop(origin_img, bbox[1], bbox[0], bbox[3]-bbox[1], bbox[2]-bbox[0])
     img.save("bbox0.png")
-    resize = transforms.Resize((256, 192))
+    resize = transforms.Resize((256, 256))
     to_tensor = transforms.ToTensor()
     #normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406])
     #img = normalize(to_tensor(resize(img)))
@@ -199,7 +199,7 @@ def output_to_coords(output, is3d=False, idx=0):
 
 def draw_joints(origin_img, coords, bbox):
     img = TF.crop(origin_img, bbox[1], bbox[0], bbox[3]-bbox[1], bbox[2]-bbox[0])
-    img = TF.resize(img, (256,192))
+    img = TF.resize(img, (256,256))
     print(coords)
     fig = plt.figure()
     ax = fig.add_subplot()
@@ -210,7 +210,7 @@ def draw_joints(origin_img, coords, bbox):
 
 def draw_joints3d(origin_img, coords, bbox):
     img = TF.crop(origin_img, bbox[1], bbox[0], bbox[3]-bbox[1], bbox[2]-bbox[0])
-    img = TF.resize(img, (256,192))
+    img = TF.resize(img, (256,256))
     draw_3Dimg(coords, img, output="res3d.png")
 
 
@@ -251,6 +251,7 @@ def inference(img_path):
 
     if cfg.MODEL.TYPE == 'RegressFlow3d':
         draw_joints3d(origin_img, coords, bbox)
+        draw_joints(origin_img, coords, bbox)
     else:
         draw_joints(origin_img, coords, bbox)
 
@@ -321,7 +322,7 @@ def read_mixed():
         
 
 if __name__ == '__main__':
-    #inference("./temp/0521.png")
+    inference("./temp/0521.png")
     #read_dataset()
     #read_mirrored()
-    read_mixed()
+    #read_mixed()

@@ -7,6 +7,7 @@ import argparse
 
 sys.path.append("./models/")
 from models.HRNet import HRNet
+from models.LiteHRNet import LiteHRNet
 from models.Hourglass import Hourglass
 from models.RegressFlow import RegressFlow, RegressFlow3D
 from models.DeepPose import DeepPose
@@ -17,6 +18,7 @@ from models.DSPosev2 import DSPosev2
 from models.DSPosev3 import DSPosev3
 from models.DSPosev4 import DSPosev4
 from models.DSPosev5 import DSPosev5
+from models.DSPosev6 import DSPosev6
 
 from loss import MSELoss, RLELoss, RLELoss3D
 
@@ -136,6 +138,8 @@ def main_worker():
         model = Hourglass(cfg=cfg)
     elif cfg.MODEL.TYPE == 'HRNet':
         model = HRNet(32, cfg.DATA_PRESET.NUM_JOINTS, 0.1)
+    elif cfg.MODEL.TYPE == 'LiteHRNet':
+        model = LiteHRNet()
     elif cfg.MODEL.TYPE == 'RegressFlow':
         model = RegressFlow(cfg=cfg)
     elif cfg.MODEL.TYPE == 'RegressFlow3d':
@@ -155,7 +159,9 @@ def main_worker():
     elif cfg.MODEL.TYPE == 'DSPosev4':
         model = DSPosev4(cfg=cfg)
     elif cfg.MODEL.TYPE == 'DSPosev5':
-        model = DSPosev4(cfg=cfg)
+        model = DSPosev5(cfg=cfg)
+    elif cfg.MODEL.TYPE == 'DSPosev6':
+        model = DSPosev6(cfg=cfg)
 
     else:
         print("Error : unkown model name.")

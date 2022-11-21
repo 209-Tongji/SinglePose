@@ -129,9 +129,9 @@ class MobileNetV3_Large(nn.Module):
         return out
 
 class MobileNetV3_Small(nn.Module):
-    def __init__(self, class_num=102):
+    def __init__(self, class_num=102,img_channel=3):
         super(MobileNetV3_Small, self).__init__()
-        self.conv1 = nn.Conv2d(3, 16, kernel_size=3, stride=2, padding=1, bias=False)
+        self.conv1 = nn.Conv2d(img_channel, 16, kernel_size=3, stride=2, padding=1, bias=False)
         self.bn1 = nn.BatchNorm2d(16)
         self.hs1 = hswish()
         self.bneck = nn.Sequential(
@@ -183,6 +183,63 @@ class MobileNetV3_Small(nn.Module):
         #out = out.view(out.size(0), -1)
         return out
 
+class MobileNetV3_Small_v1(nn.Module):
+    def __init__(self, class_num=102,img_channel=4):
+        super(MobileNetV3_Small_v1, self).__init__()
+        self.conv1 = nn.Conv2d(img_channel, 16, kernel_size=3, stride=2, padding=1, bias=False)
+        self.bn1 = nn.BatchNorm2d(16)
+        self.hs1 = hswish()
+        self.bneck = nn.Sequential(
+            Block(3, 16, 16, 16, relu(), SeModule(16), 2),
+            Block(3, 16, 72, 24, relu(), None, 2),
+            Block(3, 24, 88, 24, relu(), None, 1),
+            Block(5, 24, 96, 40, hswish(), SeModule(96), 2),
+            Block(5, 40, 240, 40, hswish(), SeModule(240), 1),
+            Block(5, 40, 240, 40, hswish(), SeModule(240), 1),
+            Block(5, 40, 120, 48, hswish(), SeModule(120), 1),
+            Block(5, 48, 144, 48, hswish(), SeModule(144), 1),
+            Block(5, 48, 288, 96, hswish(), SeModule(288), 2),
+            Block(5, 96, 576, 96, hswish(), SeModule(576), 1),
+            Block(5, 96, 576, 96, hswish(), SeModule(576), 1),
+        )
+        self.conv2 = nn.Conv2d(96, 512, kernel_size=1, stride=1, padding=0, bias=False)
+        self.bn2 = nn.BatchNorm2d(512)
+        self.hs2 = hswish()
+        self.avg_pool = nn.AdaptiveAvgPool2d(1)
+        self.conv3 = nn.Conv2d(576, 1024, kernel_size=1, stride=1, padding=0, bias=False)
+        self.hs3 = hswish()
+        # classifier
+        # self.conv4 = nn.Conv2d(1024, class_num, kernel_size=1, stride=1, padding=0, bias=False)
+        self.init_params()
+    
+    def init_params(self):
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                init.kaiming_normal_(m.weight, mode='fan_out')
+                if m.bias is not None:
+                    init.constant_(m.bias, 0)
+            elif isinstance(m, nn.BatchNorm2d):
+                init.constant_(m.weight, 1)
+                init.constant_(m.bias, 0)
+    
+    def forward(self, x):
+        mask = x[:,3:4,:,:]
+        out = self.conv1(x)   
+        out = self.bn1(out)
+        out = self.hs1(out)
+        mask = mask[:, :, 0::2, 0::2]
+        out = out * mask
+        out = self.bneck(out)
+        out = self.conv2(out)
+        out = self.bn2(out)
+        out = self.hs2(out)
+        #out = self.avg_pool(out)
+        #out = out.view(out.size(0), -1)
+        #out = self.conv3(out)
+        #out = self.hs3(out)
+        #out = self.conv4(out)
+        #out = out.view(out.size(0), -1)
+        return out
 
 class MobileNetV3_Large_Classification(nn.Module):
     def __init__(self, class_num=102):
@@ -218,8 +275,8 @@ if __name__ == '__main__':
     print(flops, params)
     '''
 
-    model = MobileNetV3_Small()
-    input = torch.randn(2, 3, 256, 192)
+    model = MobileNetV3_Small_v1()
+    input = torch.randn(2, 4, 256, 192)
     output = model(input)
     print(output.shape)
 

@@ -4,7 +4,8 @@ from torch import nn
 import torch.nn.functional as F
 
 from MobileNet import MobileNetV2
-from MobileNetv3 import MobileNetV3_Small, MobileNetV3_Large
+from MobileNetv3 import MobileNetV3_Small, MobileNetV3_Large, MobileNetV3_Small_v1
+from MobileNet_Mask import MobileNet_Mask
 
 # derived from https://github.com/leoxiaobin/deep-high-resolution-net.pytorch
 class DSHourglass(nn.Module):
@@ -21,6 +22,14 @@ class DSHourglass(nn.Module):
             backbone_pretrained = True
             self.feature_channel = 1280
         
+        elif cfg.MODEL.BACKBONE.TYPE == 'MobileNetV3_Small_v1':
+            self.preact = MobileNetV3_Small_v1()
+            self.feature_channel = 512
+        
+        elif cfg.MODEL.BACKBONE.TYPE == 'MobileNetV3_Small_i4':
+            self.preact = MobileNetV3_Small(img_channel=4)
+            self.feature_channel = 512
+        
         elif cfg.MODEL.BACKBONE.TYPE == 'MobileNetV3_Small':
             self.preact = MobileNetV3_Small()
             self.feature_channel = 512
@@ -31,6 +40,10 @@ class DSHourglass(nn.Module):
         
         elif cfg.MODEL.BACKBONE.TYPE == 'MobileNet_i4':
             self.preact = MobileNetV2(img_channel=4)
+            self.feature_channel = 1280
+        
+        elif cfg.MODEL.BACKBONE.TYPE == 'MobileNet_Mask':
+            self.preact = MobileNet_Mask(img_channel=4, mask_layer=cfg.MODEL.BACKBONE.MASK_LIST)
             self.feature_channel = 1280
 
 
@@ -121,7 +134,7 @@ from easydict import EasyDict
   
 cfg = EasyDict(
     MODEL=EasyDict(
-        TYPE="Hourglass",
+        TYPE="DHourglass",
         BACKBONE=EasyDict(
             TYPE="MobileNetV3_Small",
         )

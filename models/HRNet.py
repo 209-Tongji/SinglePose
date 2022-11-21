@@ -70,6 +70,24 @@ class BasicBlock(nn.Module):
 
         return out
 
+import torch.nn.functional as F
+
+class MyUpsample(nn.Module):
+    def __init__(self, scale_factor=2):
+        super(MyUpsample, self).__init__()
+        self.scale_factor = scale_factor
+ 
+    def forward(self, x):
+        '''
+        if self.training:
+            x = F.interpolate(x, scale_factor=self.scale_factor, mode="nearest")
+        else:
+            # hack in order to generate a simpler onnx
+            x = F.interpolate(x, size=[int(self.scale_factor * x.shape[2]), int(self.scale_factor * x.shape[3])], mode='nearest')
+        '''
+        x = F.interpolate(x, scale_factor=self.scale_factor, mode="nearest")
+        return x
+
 class StageModule(nn.Module):
     def __init__(self, stage, output_branches, c, bn_momentum):
         super(StageModule, self).__init__()
@@ -98,7 +116,8 @@ class StageModule(nn.Module):
                     self.fuse_layers[-1].append(nn.Sequential(
                         nn.Conv2d(c * (2 ** j), c * (2 ** i), kernel_size=(1, 1), stride=(1, 1), bias=False),
                         nn.BatchNorm2d(c * (2 ** i), eps=1e-05, momentum=0.1, affine=True, track_running_stats=True),
-                        nn.Upsample(scale_factor=(2.0 ** (j - i)), mode='nearest'),
+                        #nn.Upsample(scale_factor=(2.0 ** (j - i)), mode='nearest'),
+                        MyUpsample(scale_factor=(2.0 ** (j - i))),
                     ))
                 elif i > j:
                     ops = []

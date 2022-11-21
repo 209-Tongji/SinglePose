@@ -4,6 +4,7 @@ nohup.out
 /logs/
 /results/
 /temp/
+/ncnnModels/
 
 *.pth
 *.log
@@ -11,6 +12,9 @@ nohup.out
 *.jpg
 *.jpeg
 *.pyc
+*.bin
+*.param
+*.onnx
 
 
 tags

@@ -1,8 +1,13 @@
 MODEL:
   TYPE: 'DSHourglass'
-  PRETRAINED: './pretrained/dshourglass_mobileneti4_maskcoco2_best.pth'
+  PRETRAINED:
   BACKBONE:
-    TYPE: 'MobileNet_i4'
+    TYPE: 'MobileNet_Mask'
+    MASK_LIST: 
+    - -1
+    - 0
+    - 1
+    - 2
 
 
 DATASET:
@@ -43,20 +48,20 @@ LOSS:
   HEATMAP2COORD: 'heatmap'
 
 TRAIN:
-  BEGIN_EPOCH: 200
+  BEGIN_EPOCH: 0
   END_EPOCH: 300
   BATCH_SIZE: 64
   OPTIMIZER: 'adam'
-  LR: 0.00005
+  LR: 0.005
   LR_FACTOR: 0.1
   LR_STEP:
-  - 170
+  - 100
   - 200
 
 TEST:
   HEATMAP2COORD: 'heatmap'
 
 WORK:
-  LOG: "./logs/dshourglass_mobileneti4_maskcoco2.log"
-  BEST_MODEL: './pretrained/dshourglass_mobileneti4_maskcoco2_best.pth'
-  FINAL_MODEL: './pretrained/dshourglass_mobileneti4_maskcoco2_final.pth'
+  LOG: "./logs/dshourglass_mobilenetMask_coco_0012.log"
+  BEST_MODEL: './pretrained/dshourglass_mobilenetMask_coco_0012_best.pth'
+  FINAL_MODEL: './pretrained/dshourglass_mobilenetMask_coco_0012_final.pth'
