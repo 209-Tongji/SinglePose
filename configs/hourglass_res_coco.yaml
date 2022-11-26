@@ -45,16 +45,16 @@ LOSS:
 
 TRAIN:
   BEGIN_EPOCH: 0
-  END_EPOCH: 100
+  END_EPOCH: 300
   BATCH_SIZE: 64
   OPTIMIZER: 'adam'
-  LR: 0.001
+  LR: 0.005
   LR_FACTOR: 0.1
   LR_STEP:
-  - 170
+  - 100
   - 200
 
 WORK:
-  LOG: "./logs/ResPose_coco.log"
-  BEST_MODEL: './pretrained/respose_coco_best.pth'
-  FINAL_MODEL: './pretrained/respose_coco_final.pth'
+  LOG: "./logs/SimpleBaseline_coco.log"
+  BEST_MODEL: './pretrained/SimpleBaseline_coco_best.pth'
+  FINAL_MODEL: './pretrained/SimpleBaseline_coco_final.pth'

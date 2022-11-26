@@ -1,6 +1,6 @@
 MODEL:
   TYPE: 'LiteHRNet'
-  PRETRAINED: './pretrained/litehrnet_coco_best.pth'
+  PRETRAINED:
 
 DATASET:
   TRAIN:
@@ -40,20 +40,20 @@ LOSS:
   HEATMAP2COORD: 'heatmap'
   
 TRAIN:
-  BEGIN_EPOCH: 100
-  END_EPOCH: 200
+  BEGIN_EPOCH: 0
+  END_EPOCH: 300
   BATCH_SIZE: 64
   OPTIMIZER: 'adam'
-  LR: 0.0001
+  LR: 0.005
   LR_FACTOR: 0.1
   LR_STEP:
-  - 170
+  - 100
   - 200
 
 TEST:
   HEATMAP2COORD: 'heatmap'
 
 WORK:
-  LOG: "./logs/litehrnet_coco.log"
-  BEST_MODEL: './pretrained/litehrnet_coco_best.pth'
-  FINAL_MODEL: './pretrained/litehrnet_coco_final.pth'
+  LOG: "./logs/litehrnet_32_coco.log"
+  BEST_MODEL: './pretrained/litehrnet_32_coco_best.pth'
+  FINAL_MODEL: './pretrained/litehrnet_32_coco_final.pth'

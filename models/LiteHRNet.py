@@ -732,7 +732,7 @@ class LiteHRNet(nn.Module):
             stem=dict(stem_channels=32, out_channels=32, expand_ratio=1),
             num_stages=3,
             stages_spec=dict(
-                num_modules=(2, 4, 2),
+                num_modules=(3, 8, 3),
                 num_branches=(2, 3, 4),
                 num_blocks=(2, 2, 2),
                 module_type=('LITE', 'LITE', 'LITE'),
@@ -963,7 +963,7 @@ def test_demo():
         stem=dict(stem_channels=32, out_channels=32, expand_ratio=1),
         num_stages=3,
         stages_spec=dict(
-            num_modules=(2, 4, 2),
+            num_modules=(3, 8, 3),
             num_branches=(2, 3, 4),
             num_blocks=(2, 2, 2),
             module_type=('LITE', 'LITE', 'LITE'),
@@ -989,6 +989,11 @@ def test_demo():
 
 
     #stat(model, (3, 256, 192))
+
+    flops, params = get_model_complexity_info(model, (3,256,192), as_strings=True, print_per_layer_stat=True)  #(3,512,512)输入图片的尺寸
+    print("Flops: {}".format(flops))
+    print("Params: " + params)
+
 
 
 
