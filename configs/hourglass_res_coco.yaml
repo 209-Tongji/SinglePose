@@ -3,7 +3,7 @@ MODEL:
   PRETRAINED: ''
   BACKBONE:
     TYPE: 'ResNet'
-    NUM_LAYERS: 50
+    NUM_LAYERS: 101
 
 
 DATASET:
@@ -55,6 +55,6 @@ TRAIN:
   - 200
 
 WORK:
-  LOG: "./logs/SimpleBaseline_coco.log"
-  BEST_MODEL: './pretrained/SimpleBaseline_coco_best.pth'
-  FINAL_MODEL: './pretrained/SimpleBaseline_coco_final.pth'
+  LOG: "./logs/SimpleBaseline_res101_coco.log"
+  BEST_MODEL: './pretrained/SimpleBaseline_res101_coco_best.pth'
+  FINAL_MODEL: './pretrained/SimpleBaseline_res101_coco_final.pth'
