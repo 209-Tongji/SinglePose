@@ -1,6 +1,6 @@
 MODEL:
   TYPE: 'HRNet'
-  PRETRAINED: './pretrained/hrnet_coco_best.pth'
+  PRETRAINED:
 
 DATASET:
   TRAIN:
@@ -47,13 +47,13 @@ TRAIN:
   LR: 0.00005
   LR_FACTOR: 0.1
   LR_STEP:
-  - 170
+  - 100
   - 200
 
 TEST:
   HEATMAP2COORD: 'heatmap'
 
 WORK:
-  LOG: "./logs/hrnet_coco.log"
-  BEST_MODEL: './pretrained/hrnet_coco_best.pth'
-  FINAL_MODEL: './pretrained/hrnet_coco_final.pth'
+  LOG: "./logs/hrnet_48_coco.log"
+  BEST_MODEL: './pretrained/hrnet_48_coco_best.pth'
+  FINAL_MODEL: './pretrained/hrnet_48_coco_final.pth'

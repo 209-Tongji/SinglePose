@@ -1,13 +1,15 @@
 MODEL:
-  TYPE: 'Hourglass'
-  PRETRAINED:
+  TYPE: 'DSHourglass'
+  PRETRAINED: './pretrained/dshourglass_mobilenetMaskAttention_coco_0_best.pth'
   BACKBONE:
-    TYPE: 'MobileNet'
+    TYPE: 'MobileNet_Mask_Attention'
+    MASK_LIST: 
+    - -1
 
 
 DATASET:
   TRAIN:
-    TYPE: 'COCO'
+    TYPE: 'MaskCOCO2'
     ROOT: '/home/xyh/dataset/coco/'
     IMG_PREFIX: 'images'
     ANN: 'annotations/person_keypoints_train2017.json'
@@ -18,7 +20,7 @@ DATASET:
       NUM_JOINTS_HALF_BODY: 3
       PROB_HALF_BODY: 0.3
   VAL:
-    TYPE: 'COCO'
+    TYPE: 'MaskCOCO2'
     ROOT: '/home/xyh/dataset/coco/'
     IMG_PREFIX: 'images'
     ANN: 'annotations/person_keypoints_val2017.json'
@@ -57,6 +59,6 @@ TEST:
   HEATMAP2COORD: 'heatmap'
 
 WORK:
-  LOG: "./logs/hourglass_mobilenet_coco.log"
-  BEST_MODEL: './pretrained/hourglass_mobilenet_coco_best.pth'
-  FINAL_MODEL: './pretrained/hourglass_mobilenet_coco_final.pth'
+  LOG: "./logs/dshourglass_mobilenetMaskAttention_coco_0.log"
+  BEST_MODEL: './pretrained/dshourglass_mobilenetMaskAttention_coco_0_best.pth'
+  FINAL_MODEL: './pretrained/dshourglass_mobilenetMaskAttention_coco_0_final.pth'
