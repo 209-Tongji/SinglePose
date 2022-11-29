@@ -27,6 +27,31 @@ class MSELoss(nn.Module):
 
         return loss
 
+class HourglassHeatmapLoss(nn.Module):
+    """
+    loss for detection heatmap
+    """
+    def __init__(self):
+        super(HourglassHeatmapLoss, self).__init__()
+        self.nstack = 8
+
+    def heatmapLoss(self, pred, labels):
+        gt_hm = labels['target_hm']
+        gt_hm_weight = labels['target_hm_weight']
+        pred = pred.mul(gt_hm_weight)
+        gt = gt_hm.mul(gt_hm_weight)
+        l = ((pred - gt)**2)
+        l = l.mean(dim=3).mean(dim=2).mean(dim=1)
+        return l ## l of dim bsize
+
+    def forward(self, combined_hm_preds, labels):
+        combined_loss = []
+        for i in range(self.nstack):
+            combined_loss.append(self.heatmapLoss(combined_hm_preds[:,i], labels))
+        combined_loss = torch.stack(combined_loss, dim=1)
+        return torch.mean(combined_loss)
+        #return combined_loss
+
 class RLELoss(nn.Module):
     ''' RLE Regression Loss
     '''

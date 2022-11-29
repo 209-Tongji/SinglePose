@@ -198,11 +198,13 @@ class Hourglass(nn.Module):
 
             self.feature_channel = 1280
         
+        '''
         model_state = self.preact.state_dict()
         state = {k: v for k, v in x.state_dict().items()
                     if k in self.preact.state_dict() and v.size() == self.preact.state_dict()[k].size()}
         model_state.update(state)
         self.preact.load_state_dict(model_state)
+        '''
 
         self.inplanes = self.feature_channel
 
