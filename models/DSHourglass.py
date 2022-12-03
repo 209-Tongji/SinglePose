@@ -34,8 +34,8 @@ class DSHourglass(nn.Module):
             self.preact = MobileNetV2()
             import torchvision.models as tm  # noqa: F401,F403
             # x = eval(f"tm.mobilenet_v2(pretrained=True)")
-            x = eval(f"tm.mobilenet_v2(pretrained=False)")
-            backbone_pretrained = True
+            #x = eval(f"tm.mobilenet_v2(pretrained=False)")
+            #backbone_pretrained = True
             self.feature_channel = 1280
         
         elif cfg.MODEL.BACKBONE.TYPE == 'MobileNetV3_Small_v1':
@@ -121,17 +121,17 @@ class DSHourglass(nn.Module):
             layers.append(
                 nn.ConvTranspose2d(
                     in_channels=self.inplanes,
-                    out_channels=planes,
+                    out_channels=self.inplanes,
                     kernel_size=kernel,
                     stride=2,
                     padding=padding,
                     output_padding=output_padding,
-                    groups=planes,
+                    groups=self.inplanes,
                     bias=self.deconv_with_bias))
-            layers.append(nn.BatchNorm2d(planes, momentum=bn_momentum))
+            layers.append(nn.BatchNorm2d(self.inplanes, momentum=bn_momentum))
             layers.append(nn.ReLU(inplace=True))
             # Add depth-wise 1x1 conv layer
-            layers.append(nn.Conv2d(planes, planes, kernel_size=1, stride=1, padding=0, bias=False))
+            layers.append(nn.Conv2d(self.inplanes, planes, kernel_size=1, stride=1, padding=0, bias=False))
             layers.append(nn.BatchNorm2d(planes, momentum=bn_momentum))
             layers.append(nn.ReLU6(inplace=True))
             self.inplanes = planes

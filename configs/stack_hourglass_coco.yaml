@@ -1,11 +1,11 @@
 MODEL:
   TYPE: 'HourglassPose'
-  PRETRAINED: 
+  PRETRAINED: './pretrained/stack_hourglass_coco_best.pth'
 
 DATASET:
   TRAIN:
     TYPE: 'COCO'
-    ROOT: '/home/xyh/dataset/coco/'
+    ROOT: '/remote-home/ye/dataset/coco/'
     IMG_PREFIX: 'images'
     ANN: 'annotations/person_keypoints_train2017.json'
     AUG:
@@ -16,7 +16,7 @@ DATASET:
       PROB_HALF_BODY: 0.3
   VAL:
     TYPE: 'COCO'
-    ROOT: '/home/xyh/dataset/coco/'
+    ROOT: '/remote-home/ye/dataset/coco/'
     IMG_PREFIX: 'images'
     ANN: 'annotations/person_keypoints_val2017.json'
   TEST:
@@ -40,11 +40,11 @@ LOSS:
   HEATMAP2COORD: 'heatmap'
   
 TRAIN:
-  BEGIN_EPOCH: 0
-  END_EPOCH: 300
-  BATCH_SIZE: 16
+  BEGIN_EPOCH: 149
+  END_EPOCH: 200
+  BATCH_SIZE: 128
   OPTIMIZER: 'adam'
-  LR: 0.001
+  LR: 0.00001
   LR_FACTOR: 0.1
   LR_STEP:
   - 100

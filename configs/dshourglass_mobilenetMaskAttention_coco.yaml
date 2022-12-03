@@ -13,7 +13,7 @@ MODEL:
 DATASET:
   TRAIN:
     TYPE: 'MaskCOCO2'
-    ROOT: '/home/xyh/dataset/coco/'
+    ROOT: '/remote-home/ye/dataset/coco/'
     IMG_PREFIX: 'images'
     ANN: 'annotations/person_keypoints_train2017.json'
     AUG:
@@ -24,7 +24,7 @@ DATASET:
       PROB_HALF_BODY: 0.3
   VAL:
     TYPE: 'MaskCOCO2'
-    ROOT: '/home/xyh/dataset/coco/'
+    ROOT: '/remote-home/ye/dataset/coco/'
     IMG_PREFIX: 'images'
     ANN: 'annotations/person_keypoints_val2017.json'
   TEST:
@@ -49,13 +49,13 @@ LOSS:
 
 TRAIN:
   BEGIN_EPOCH: 0
-  END_EPOCH: 300
+  END_EPOCH: 210
   BATCH_SIZE: 64
   OPTIMIZER: 'adam'
-  LR: 0.005
+  LR: 0.001
   LR_FACTOR: 0.1
   LR_STEP:
-  - 100
+  - 170
   - 200
 
 TEST:
