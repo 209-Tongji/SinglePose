@@ -660,6 +660,43 @@ class LiteHRModule(nn.Module):
             out = [out[0]]
         return out
 
+litehrnet_18_config=dict(
+        stem=dict(stem_channels=32, out_channels=32, expand_ratio=1),
+        num_stages=3,
+        stages_spec=dict(
+            num_modules=(2, 4, 2),
+            num_branches=(2, 3, 4),
+            num_blocks=(2, 2, 2),
+            module_type=('LITE', 'LITE', 'LITE'),
+            with_fuse=(True, True, True),
+            reduce_ratios=(8, 8, 8),
+            num_channels=(
+                (40, 80),
+                (40, 80, 160),
+                (40, 80, 160, 320),
+            )),
+        with_head=True,
+    )
+
+litehrnet_30_config=dict(
+        stem=dict(stem_channels=32, out_channels=32, expand_ratio=1),
+        num_stages=3,
+        stages_spec=dict(
+            num_modules=(3, 8, 3),
+            num_branches=(2, 3, 4),
+            num_blocks=(2, 2, 2),
+            module_type=('LITE', 'LITE', 'LITE'),
+            with_fuse=(True, True, True),
+            reduce_ratios=(8, 8, 8),
+            num_channels=(
+                (40, 80),
+                (40, 80, 160),
+                (40, 80, 160, 320),
+            )),
+        with_head=True,
+    )
+
+
 class LiteHRNet(nn.Module):
     """Lite-HRNet backbone.
 
@@ -728,23 +765,7 @@ class LiteHRNet(nn.Module):
                  with_cp=False,
                  zero_init_residual=False):
         super().__init__()
-        self.extra=dict(
-            stem=dict(stem_channels=32, out_channels=32, expand_ratio=1),
-            num_stages=3,
-            stages_spec=dict(
-                num_modules=(3, 8, 3),
-                num_branches=(2, 3, 4),
-                num_blocks=(2, 2, 2),
-                module_type=('LITE', 'LITE', 'LITE'),
-                with_fuse=(True, True, True),
-                reduce_ratios=(8, 8, 8),
-                num_channels=(
-                    (40, 80),
-                    (40, 80, 160),
-                    (40, 80, 160, 320),
-                )),
-            with_head=True,
-        )
+        self.extra=litehrnet_18_config
         self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
         self.norm_eval = norm_eval
@@ -959,25 +980,7 @@ from torchsummary import summary
 from ptflops import get_model_complexity_info
 
 def test_demo():
-    extra=dict(
-        stem=dict(stem_channels=32, out_channels=32, expand_ratio=1),
-        num_stages=3,
-        stages_spec=dict(
-            num_modules=(3, 8, 3),
-            num_branches=(2, 3, 4),
-            num_blocks=(2, 2, 2),
-            module_type=('LITE', 'LITE', 'LITE'),
-            with_fuse=(True, True, True),
-            reduce_ratios=(8, 8, 8),
-            num_channels=(
-                (40, 80),
-                (40, 80, 160),
-                (40, 80, 160, 320),
-            )),
-        with_head=True,
-    )
-
-    model = LiteHRNet(extra, in_channels=3)
+    model = LiteHRNet(in_channels=3)
     model.eval()
     images = torch.rand(1, 3, 256, 192)
     level_outputs = model.forward(images)

@@ -1,6 +1,6 @@
 MODEL:
   TYPE: 'DSHourglass'
-  PRETRAINED: './pretrained/dshourglass_mobilenetv3_small_i4_maskcoco2_final.pth'
+  PRETRAINED: './pretrained/evaluate/dsu_mobilenetv3_msa_1.pth'
   BACKBONE:
     TYPE: 'MobileNetV3_Small_i4'
 
@@ -52,6 +52,9 @@ TRAIN:
   LR_STEP:
   - 170
   - 200
+
+TEST:
+  HEATMAP2COORD: 'heatmap'
 
 WORK:
   LOG: "./logs/dshourglass_mobilenetv3_small_i4_maskcoco2.log"

@@ -144,7 +144,7 @@ def main_worker():
     elif cfg.MODEL.TYPE == 'Hourglass':
         model = Hourglass(cfg=cfg)
     elif cfg.MODEL.TYPE == 'HRNet':
-        model = HRNet(48, cfg.DATA_PRESET.NUM_JOINTS, 0.1)
+        model = HRNet(cfg.MODEL.W, cfg.DATA_PRESET.NUM_JOINTS, 0.1)
     elif cfg.MODEL.TYPE == 'LiteHRNet':
         model = LiteHRNet()
     elif cfg.MODEL.TYPE == 'RegressFlow':

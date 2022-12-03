@@ -1,6 +1,6 @@
 MODEL:
   TYPE: 'LiteHRNet'
-  PRETRAINED:
+  PRETRAINED: './pretrained/evaluate/litehrnet-w18.pth'
 
 DATASET:
   TRAIN:

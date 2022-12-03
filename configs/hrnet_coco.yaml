@@ -1,6 +1,7 @@
 MODEL:
   TYPE: 'HRNet'
-  PRETRAINED:
+  PRETRAINED: './pretrained/hrnet_coco_best.pth'
+  W: 32
 
 DATASET:
   TRAIN:
@@ -40,11 +41,11 @@ LOSS:
   HEATMAP2COORD: 'heatmap'
   
 TRAIN:
-  BEGIN_EPOCH: 200
-  END_EPOCH: 300
+  BEGIN_EPOCH: 300
+  END_EPOCH: 400
   BATCH_SIZE: 64
   OPTIMIZER: 'adam'
-  LR: 0.00005
+  LR: 0.000005
   LR_FACTOR: 0.1
   LR_STEP:
   - 100
@@ -54,6 +55,6 @@ TEST:
   HEATMAP2COORD: 'heatmap'
 
 WORK:
-  LOG: "./logs/hrnet_48_coco.log"
-  BEST_MODEL: './pretrained/hrnet_48_coco_best.pth'
-  FINAL_MODEL: './pretrained/hrnet_48_coco_final.pth'
+  LOG: "./logs/hrnet_coco.log"
+  BEST_MODEL: './pretrained/hrnet_coco_best.pth'
+  FINAL_MODEL: './pretrained/hrnet_coco_final.pth'

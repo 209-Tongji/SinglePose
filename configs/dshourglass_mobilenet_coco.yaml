@@ -1,6 +1,6 @@
 MODEL:
   TYPE: 'DSHourglass'
-  PRETRAINED: './pretrained/dshourglass_mobilenet_coco_best3.pth'
+  PRETRAINED: './pretrained/evaluate/dsu_mobilenet.pth'
   BACKBONE:
     TYPE: 'MobileNet'
 

@@ -1,6 +1,6 @@
 MODEL:
   TYPE: 'Hourglass'
-  PRETRAINED:
+  PRETRAINED: './pretrained/evaluate/simplebaseline_mobilenet.pth'
   BACKBONE:
     TYPE: 'MobileNet'
 

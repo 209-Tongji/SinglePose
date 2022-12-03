@@ -1,9 +1,9 @@
 MODEL:
   TYPE: 'Hourglass'
-  PRETRAINED: ''
+  PRETRAINED: './pretrained/evaluate/simplebaseline_res152.pth'
   BACKBONE:
     TYPE: 'ResNet'
-    NUM_LAYERS: 101
+    NUM_LAYERS: 152
 
 
 DATASET:
@@ -53,6 +53,9 @@ TRAIN:
   LR_STEP:
   - 100
   - 200
+
+TEST:
+  HEATMAP2COORD: 'heatmap'
 
 WORK:
   LOG: "./logs/SimpleBaseline_res101_coco.log"
