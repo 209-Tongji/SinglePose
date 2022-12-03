@@ -1,6 +1,6 @@
 MODEL:
   TYPE: 'Hourglass'
-  PRETRAINED:
+  PRETRAINED: './pretrained/hourglass_mobilenet_coco_best.pth'
   BACKBONE:
     TYPE: 'MobileNet'
 
