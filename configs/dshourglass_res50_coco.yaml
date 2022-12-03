@@ -1,7 +1,10 @@
 MODEL:
-  TYPE: 'HRNet'
-  PRETRAINED: './pretrained/hrnet_32_coco_best.pth'
-  W: 32
+  TYPE: 'DSHourglass'
+  PRETRAINED:
+  BACKBONE:
+    TYPE: 'ResNet'
+    NUM_LAYERS: 50
+
 
 DATASET:
   TRAIN:
@@ -39,22 +42,22 @@ DATA_PRESET:
 LOSS:
   TYPE: 'MSELoss'
   HEATMAP2COORD: 'heatmap'
-  
+
 TRAIN:
-  BEGIN_EPOCH: 164
-  END_EPOCH: 210
+  BEGIN_EPOCH: 0
+  END_EPOCH: 300
   BATCH_SIZE: 128
   OPTIMIZER: 'adam'
-  LR: 0.001
+  LR: 0.005
   LR_FACTOR: 0.1
   LR_STEP:
-  - 170
+  - 100
   - 200
 
 TEST:
   HEATMAP2COORD: 'heatmap'
-
+  
 WORK:
-  LOG: "./logs/hrnet_32_coco.log"
-  BEST_MODEL: './pretrained/hrnet_32_coco_best.pth'
-  FINAL_MODEL: './pretrained/hrnet_32_coco_final.pth'
+  LOG: "./logs/dshourglass_res50_coco.log"
+  BEST_MODEL: './pretrained/dshourglass_res50_coco_best.pth'
+  FINAL_MODEL: './pretrained/dshourglass_res50_coco_final.pth'

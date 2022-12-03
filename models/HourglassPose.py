@@ -159,14 +159,16 @@ from ptflops import get_model_complexity_info
 if __name__ == '__main__':
     model = PoseNet(8, 256, 17)
 
+    '''
     input = torch.randn(2, 3, 256, 192)
     output = model(input)
     print(output.shape)
 
     final = output[:,-1,:,:,:]
     print(final.shape)
-
     '''
+
+
     flops, params = get_model_complexity_info(model, (3,256,192), as_strings=True, print_per_layer_stat=True)  #(3,512,512)输入图片的尺寸
     print("Flops: {}".format(flops))
     print("Params: " + params)
@@ -176,5 +178,4 @@ if __name__ == '__main__':
     flops, params = clever_format([flops, params], "%.3f")
     print(flops, params)
 
-    stat(model, (3, 256, 192))
-    '''
+    #stat(model, (3, 256, 192))
