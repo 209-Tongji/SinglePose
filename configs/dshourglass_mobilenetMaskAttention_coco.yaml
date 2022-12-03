@@ -11,7 +11,7 @@ MODEL:
 DATASET:
   TRAIN:
     TYPE: 'MaskCOCO2'
-    ROOT: '/home/xyh/dataset/coco/'
+    ROOT: '/remote-home/ye/dataset/coco/'
     IMG_PREFIX: 'images'
     ANN: 'annotations/person_keypoints_train2017.json'
     AUG:
@@ -22,7 +22,7 @@ DATASET:
       PROB_HALF_BODY: 0.3
   VAL:
     TYPE: 'MaskCOCO2'
-    ROOT: '/home/xyh/dataset/coco/'
+    ROOT: '/remote-home/ye/dataset/coco/'
     IMG_PREFIX: 'images'
     ANN: 'annotations/person_keypoints_val2017.json'
   TEST:

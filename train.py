@@ -19,8 +19,9 @@ from models.DSPosev3 import DSPosev3
 from models.DSPosev4 import DSPosev4
 from models.DSPosev5 import DSPosev5
 from models.DSPosev6 import DSPosev6
+from models.HourglassPose import PoseNet
 
-from loss import MSELoss, RLELoss, RLELoss3D
+from loss import MSELoss, RLELoss, RLELoss3D, HourglassHeatmapLoss
 
 from datasets.mscoco import MSCOCO
 from datasets.aistpose2d import AISTPose2D
@@ -72,6 +73,7 @@ def setup_logger(log_file_name):
 def train(train_loader, model, optimizer, criterion, epoch, cfg):
     loss_logger = DataLogger()
     #acc_logger = DataLogger()
+    logger.info(optimizer.state_dict()['param_groups'][0]['lr'])
     model.train()
     total = len(train_loader)
     for i, (inputs, labels, _, bboxes) in enumerate(train_loader):
@@ -122,6 +124,10 @@ def validate(val_loader, model, criterion, cfg):
         elif cfg.MODEL.TYPE == 'CPM':
             outputs = model(inputs, labels['center_map'])
             acc = calc_accuracy(outputs[:,5,:,:], labels)
+        elif cfg.MODEL.TYPE == 'HourglassPose':
+            outputs = model(inputs)
+            outputs = outputs[:,-1,:,:,:]   
+            acc = calc_accuracy(outputs, labels)
         else:
             outputs = model(inputs)   
             acc = calc_accuracy(outputs, labels)
@@ -134,10 +140,12 @@ def validate(val_loader, model, criterion, cfg):
 
 def main_worker():
     setup_logger(cfg.WORK.LOG)
-    if cfg.MODEL.TYPE == 'Hourglass':
+    if cfg.MODEL.TYPE == 'HourglassPose':
+        model = PoseNet(8, 256, 17)
+    elif cfg.MODEL.TYPE == 'Hourglass':
         model = Hourglass(cfg=cfg)
     elif cfg.MODEL.TYPE == 'HRNet':
-        model = HRNet(48, cfg.DATA_PRESET.NUM_JOINTS, 0.1)
+        model = HRNet(cfg.MODEL.W, cfg.DATA_PRESET.NUM_JOINTS, 0.1)
     elif cfg.MODEL.TYPE == 'LiteHRNet':
         model = LiteHRNet()
     elif cfg.MODEL.TYPE == 'RegressFlow':
@@ -171,7 +179,9 @@ def main_worker():
         model = load_pretrained(model, cfg.MODEL.PRETRAINED, device)
     model = model.cuda()
 
-    if cfg.MODEL.TYPE == 'RegressFlow':
+    if cfg.MODEL.TYPE == 'HourglassPose':
+        criterion = HourglassHeatmapLoss().cuda()
+    elif cfg.MODEL.TYPE == 'RegressFlow':
         criterion = RLELoss().cuda()
     elif cfg.MODEL.TYPE == 'RegressFlow3d':
         criterion = RLELoss3D().cuda()
@@ -179,12 +189,12 @@ def main_worker():
         criterion = MSELoss(cfg.LOSS.HEATMAP2COORD).cuda()
 
     if cfg.TRAIN.OPTIMIZER == 'adam':
-        optimizer = torch.optim.Adam(model.parameters(), lr=cfg.TRAIN.LR)
+        optimizer = torch.optim.Adam([{'params': model.parameters(), 'initial_lr': cfg.TRAIN.LR}], lr=cfg.TRAIN.LR)
     elif cfg.TRAIN.OPTIMIZER == 'sgd':
-        optimizer = torch.optim.SGD(model.parameters(), lr=cfg.TRAIN.LR, momentum=0.9, weight_decay=0.0001)
+        optimizer = torch.optim.SGD([{'params': model.parameters(), 'initial_lr': cfg.TRAIN.LR}], lr=cfg.TRAIN.LR, momentum=0.9, weight_decay=0.0001)
     
     lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(
-        optimizer, milestones=cfg.TRAIN.LR_STEP, gamma=cfg.TRAIN.LR_FACTOR)
+        optimizer, milestones=cfg.TRAIN.LR_STEP, gamma=cfg.TRAIN.LR_FACTOR, last_epoch=cfg.TRAIN.BEGIN_EPOCH)
     
     if cfg.DATASET.TRAIN.TYPE == 'COCO':
         train_dataset = MSCOCO(root=cfg.DATASET.TRAIN.ROOT, ann_file=cfg.DATASET.TRAIN.ANN, images_dir=cfg.DATASET.TRAIN.IMG_PREFIX, cfg=cfg, train=True)

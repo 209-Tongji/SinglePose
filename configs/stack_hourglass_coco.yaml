@@ -1,7 +1,6 @@
 MODEL:
-  TYPE: 'HRNet'
-  PRETRAINED: './pretrained/hrnet_32_coco_best.pth'
-  W: 32
+  TYPE: 'HourglassPose'
+  PRETRAINED: './pretrained/stack_hourglass_coco_best.pth'
 
 DATASET:
   TRAIN:
@@ -41,20 +40,20 @@ LOSS:
   HEATMAP2COORD: 'heatmap'
   
 TRAIN:
-  BEGIN_EPOCH: 164
-  END_EPOCH: 210
+  BEGIN_EPOCH: 149
+  END_EPOCH: 200
   BATCH_SIZE: 128
   OPTIMIZER: 'adam'
-  LR: 0.001
+  LR: 0.00001
   LR_FACTOR: 0.1
   LR_STEP:
-  - 170
+  - 100
   - 200
 
 TEST:
   HEATMAP2COORD: 'heatmap'
 
 WORK:
-  LOG: "./logs/hrnet_32_coco.log"
-  BEST_MODEL: './pretrained/hrnet_32_coco_best.pth'
-  FINAL_MODEL: './pretrained/hrnet_32_coco_final.pth'
+  LOG: "./logs/stack_hourglass_coco.log"
+  BEST_MODEL: './pretrained/stack_hourglass_coco_best.pth'
+  FINAL_MODEL: './pretrained/stack_hourglass_coco_final.pth'

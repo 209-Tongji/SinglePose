@@ -6,6 +6,7 @@ import torch.nn.functional as F
 from MobileNet import MobileNetV2
 from MobileNetv3 import MobileNetV3_Small, MobileNetV3_Large, MobileNetV3_Small_v1
 from MobileNet_Mask import MobileNet_Mask
+from Hourglass import ResNet
 
 # derived from https://github.com/leoxiaobin/deep-high-resolution-net.pytorch
 class DSHourglass(nn.Module):
@@ -14,12 +15,28 @@ class DSHourglass(nn.Module):
         self.num_joints=cfg.DATA_PRESET.NUM_JOINTS
         backbone_pretrained = False
 
-        if cfg.MODEL.BACKBONE.TYPE == 'MobileNet':
+        if cfg.MODEL.BACKBONE.TYPE == 'ResNet':
+            self.num_layers=cfg.MODEL.BACKBONE.NUM_LAYERS
+
+            self.preact = ResNet(f"resnet{self.num_layers}")
+
+            self.feature_channel = {
+                    18: 512,
+                    34: 512,
+                    50: 2048,
+                    101: 2048,
+                    152: 2048
+            }[self.num_layers]
+        
+            import torchvision.models as tm
+            x = eval(f"tm.resnet{self.num_layers}(pretrained=True)")
+
+        elif cfg.MODEL.BACKBONE.TYPE == 'MobileNet':
             self.preact = MobileNetV2()
             import torchvision.models as tm  # noqa: F401,F403
             # x = eval(f"tm.mobilenet_v2(pretrained=True)")
-            x = eval(f"tm.mobilenet_v2(pretrained=False)")
-            backbone_pretrained = True
+            #x = eval(f"tm.mobilenet_v2(pretrained=False)")
+            #backbone_pretrained = True
             self.feature_channel = 1280
         
         elif cfg.MODEL.BACKBONE.TYPE == 'MobileNetV3_Small_v1':
@@ -140,7 +157,8 @@ cfg = EasyDict(
     MODEL=EasyDict(
         TYPE="DHourglass",
         BACKBONE=EasyDict(
-            TYPE="MobileNet_i4",
+            TYPE="ResNet",
+            NUM_LAYERS=50
         )
     ),
     DATA_PRESET=EasyDict(
@@ -160,16 +178,16 @@ Total MemR+W: 173.24MB
 if __name__ == '__main__':
     model = DSHourglass(cfg)
 
-    flops, params = get_model_complexity_info(model, (4,256,192), as_strings=True, print_per_layer_stat=True)  #(3,512,512)输入图片的尺寸
+    flops, params = get_model_complexity_info(model, (3,256,192), as_strings=True, print_per_layer_stat=True)  #(3,512,512)输入图片的尺寸
     print("Flops: {}".format(flops))
     print("Params: " + params)
 
-    image = torch.randn(1, 4, 256, 192)
+    image = torch.randn(1, 3, 256, 192)
     flops, params = profile(model, inputs=(image,))
     flops, params = clever_format([flops, params], "%.3f")
     print(flops, params)
 
-    stat(model, (4, 256, 192))
+    #stat(model, (4, 256, 192))
 
     '''
     print(model)
