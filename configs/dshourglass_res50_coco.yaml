@@ -1,6 +1,6 @@
 MODEL:
   TYPE: 'DSHourglass'
-  PRETRAINED:
+  PRETRAINED: './pretrained/evaluate/dsu_res50.pth'
   BACKBONE:
     TYPE: 'ResNet'
     NUM_LAYERS: 50
@@ -9,7 +9,7 @@ MODEL:
 DATASET:
   TRAIN:
     TYPE: 'COCO'
-    ROOT: '/remote-home/ye/dataset/coco/'
+    ROOT: '/home/xyh/dataset/coco/'
     IMG_PREFIX: 'images'
     ANN: 'annotations/person_keypoints_train2017.json'
     AUG:
@@ -20,7 +20,7 @@ DATASET:
       PROB_HALF_BODY: 0.3
   VAL:
     TYPE: 'COCO'
-    ROOT: '/remote-home/ye/dataset/coco/'
+    ROOT: '/home/xyh/dataset/coco/'
     IMG_PREFIX: 'images'
     ANN: 'annotations/person_keypoints_val2017.json'
   TEST:

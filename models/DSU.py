@@ -8,7 +8,7 @@ class Hourglass(nn.Module):
     def __init__(self, cfg):
         super(Hourglass, self).__init__()
         self.num_joints=cfg.DATA_PRESET.NUM_JOINTS
-        self.feature_channel = 2048
+        self.feature_channel = 1280
         self.inplanes = self.feature_channel
 
         # used for deconv layers
@@ -78,7 +78,7 @@ class DSHourglass(nn.Module):
     def __init__(self, cfg):
         super(DSHourglass, self).__init__()
         self.num_joints=cfg.DATA_PRESET.NUM_JOINTS
-        self.feature_channel = 2048
+        self.feature_channel = 1280
         self.inplanes = self.feature_channel
 
         # used for deconv layers
@@ -171,15 +171,16 @@ cfg = EasyDict(
 
 if __name__ == '__main__':
     model = DSHourglass(cfg)
-    input = torch.randn(2, 2048, 12, 9)
+    #model = Hourglass(cfg)
+    input = torch.randn(2, 1280, 12, 9)
     output = model(input)
     print(output.shape)
 
-    flops, params = get_model_complexity_info(model, (2048,12,9), as_strings=True, print_per_layer_stat=True)  #(3,512,512)输入图片的尺寸
+    flops, params = get_model_complexity_info(model, (1280,12,9), as_strings=True, print_per_layer_stat=True)  #(3,512,512)输入图片的尺寸
     print("Flops: {}".format(flops))
     print("Params: " + params)
 
-    image = torch.randn(1, 2048, 12, 9)
+    image = torch.randn(1, 1280, 12, 9)
     flops, params = profile(model, inputs=(image,))
     flops, params = clever_format([flops, params], "%.3f")
     print(flops, params)

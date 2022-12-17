@@ -1,6 +1,6 @@
 MODEL:
   TYPE: 'HourglassPose'
-  PRETRAINED: './pretrained/stack_hourglass_coco_best.pth'
+  PRETRAINED: './pretrained/evaluate/stack_hourglass.pth'
 
 DATASET:
   TRAIN:

@@ -283,7 +283,7 @@ cfg = EasyDict(
     MODEL=EasyDict(
         TYPE="Hourglass",
         BACKBONE=EasyDict(
-            TYPE="ResNet",
+            TYPE="MobileNet",
             NUM_LAYERS=50
         )
     ),

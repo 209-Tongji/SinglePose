@@ -17,6 +17,7 @@ from models.DSPosev3 import DSPosev3
 from models.DSPosev4 import DSPosev4
 from models.DSPosev5 import DSPosev5
 from models.DSPosev6 import DSPosev6
+from models.HourglassPose import PoseNet
 
 
 from config import update_config, opt
@@ -37,7 +38,9 @@ def load_pretrained(model, pretrained_path, device):
     print("Successfully load pre-trained model from %s " %pretrained_path)
     return model
 
-if cfg.MODEL.TYPE == 'Hourglass':
+if cfg.MODEL.TYPE == 'HourglassPose':
+    model = PoseNet(8, 256, 17)
+elif cfg.MODEL.TYPE == 'Hourglass':
     model = Hourglass(cfg=cfg)
 elif cfg.MODEL.TYPE == 'HRNet':
     model = HRNet(32, cfg.DATA_PRESET.NUM_JOINTS, 0.1)

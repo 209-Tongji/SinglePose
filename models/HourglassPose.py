@@ -141,7 +141,8 @@ class PoseNet(nn.Module):
             combined_hm_preds.append(preds)
             if i < self.nstack - 1:
                 x = x + self.merge_preds[i](preds) + self.merge_features[i](feature)
-        return torch.stack(combined_hm_preds, 1)
+        #return torch.stack(combined_hm_preds, 1)
+        return combined_hm_preds[-1]
 
     '''
     def calc_loss(self, combined_hm_preds, heatmaps):
@@ -158,11 +159,12 @@ from ptflops import get_model_complexity_info
 
 if __name__ == '__main__':
     model = PoseNet(8, 256, 17)
-    '''
+    
     input = torch.randn(2, 3, 256, 192)
     output = model(input)
     print(output.shape)
 
+    '''
     final = output[:,-1,:,:,:]
     print(final.shape)
     '''

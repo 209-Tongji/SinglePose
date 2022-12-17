@@ -1,19 +1,17 @@
 MODEL:
   TYPE: 'DSHourglass'
-  PRETRAINED: './pretrained/evaluate/dsu_mobilenet_msa_3.pth'
+  PRETRAINED: './pretrained/evaluate/dsu_mobilenet_msa_1_384x288.pth'
   BACKBONE:
     TYPE: 'MobileNet_Mask_Attention'
     MASK_LIST: 
     - -1
-    - 0
-    - 1
-    - 2
+
 
 
 DATASET:
   TRAIN:
     TYPE: 'MaskCOCO2'
-    ROOT: '/remote-home/ye/dataset/coco/'
+    ROOT: '/home/xyh/dataset/coco/'
     IMG_PREFIX: 'images'
     ANN: 'annotations/person_keypoints_train2017.json'
     AUG:
@@ -24,7 +22,7 @@ DATASET:
       PROB_HALF_BODY: 0.3
   VAL:
     TYPE: 'MaskCOCO2'
-    ROOT: '/remote-home/ye/dataset/coco/'
+    ROOT: '/home/xyh/dataset/coco/'
     IMG_PREFIX: 'images'
     ANN: 'annotations/person_keypoints_val2017.json'
   TEST:
@@ -34,11 +32,11 @@ DATA_PRESET:
   SIGMA: 2
   NUM_JOINTS: 17
   IMAGE_SIZE:
-  - 256
-  - 192
+  - 384
+  - 288
   HEATMAP_SIZE:
-  - 64
-  - 48
+  - 96
+  - 72
   NEED_HEATMAP: true
   NEED_COORD: false
   NEED_CENTERMAP: false

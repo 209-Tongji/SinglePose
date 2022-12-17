@@ -765,7 +765,7 @@ class LiteHRNet(nn.Module):
                  with_cp=False,
                  zero_init_residual=False):
         super().__init__()
-        self.extra=litehrnet_18_config
+        self.extra=litehrnet_30_config
         self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
         self.norm_eval = norm_eval

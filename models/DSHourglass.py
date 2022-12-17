@@ -156,8 +156,8 @@ cfg = EasyDict(
     MODEL=EasyDict(
         TYPE="DHourglass",
         BACKBONE=EasyDict(
-            TYPE="ResNet",
-            NUM_LAYERS=50 
+            TYPE="MobileNet_Mask_Attention",
+            MASK_LIST=[-1,0,1,2]
         )
     ),
     DATA_PRESET=EasyDict(
@@ -177,16 +177,16 @@ Total MemR+W: 173.24MB
 if __name__ == '__main__':
     model = DSHourglass(cfg)
 
-    flops, params = get_model_complexity_info(model, (3,256,192), as_strings=True, print_per_layer_stat=True)  #(3,512,512)输入图片的尺寸
+    flops, params = get_model_complexity_info(model, (4,256,192), as_strings=True, print_per_layer_stat=True)  #(3,512,512)输入图片的尺寸
     print("Flops: {}".format(flops))
     print("Params: " + params)
 
-    image = torch.randn(1, 3, 256, 192)
+    image = torch.randn(1, 4, 256, 192)
     flops, params = profile(model, inputs=(image,))
     flops, params = clever_format([flops, params], "%.3f")
     print(flops, params)
 
-    stat(model, (3, 256, 192))
+    #stat(model, (4, 256, 192))
 
     '''
     print(model)

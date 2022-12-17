@@ -1,6 +1,6 @@
 MODEL:
   TYPE: 'HRNet'
-  PRETRAINED: './pretrained/hrnet_coco_best.pth'
+  PRETRAINED: './pretrained/evaluate/hrnet_w32.pth'
   W: 32
 
 DATASET:

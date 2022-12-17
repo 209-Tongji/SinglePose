@@ -159,9 +159,16 @@ class MobileNetV2(nn.Module):
     def forward(self, x):
         return self._forward_impl(x)
 
+from ptflops import get_model_complexity_info
+
 if __name__ == '__main__':
     model = MobileNetV2()
-    print(model)
+    #print(model)
     img = torch.randn(1, 3, 256, 192)
     out = model(img)
     print(out.shape)
+
+
+    flops, params = get_model_complexity_info(model, (3,256,192), as_strings=True, print_per_layer_stat=True)  #(3,512,512)输入图片的尺寸
+    print("Flops: {}".format(flops))
+    print("Params: " + params)
